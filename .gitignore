@@ -1,0 +1,15 @@
+# Trick to ignore everything without extension
+*
+!*.*
+!/**/
+
+# allow Makefiles despite lack of extension
+!Makefile
+!makefile
+
+# c output
+*.o
+*.bin
+*.elf
+*.list
+*.d
