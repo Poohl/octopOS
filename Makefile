@@ -1,7 +1,6 @@
-
 dependencies:
 	sudo apt install libglib2.0-dev libgcrypt20-dev zlib1g-dev autoconf automake libtool bison flex libpixman-1-dev
-	sudo apt install gdb-multiarch arm-none-eabi-gcc
+	sudo apt install gdb-multiarch gcc-arm-none-eabi
 
 headers = $(wildcard *.h)
 src = $(wildcard *.c)
