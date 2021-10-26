@@ -31,7 +31,7 @@ all: $(prod) $(dumps)
 	$(CC) -o $@ $(CC_FLAGS) $<
 
 %.elf: $(obj) $(lds)
-	$(LD) $(LD_FLAGS) -T$(lds) -o $@ $(obj)
+	$(LD) $(LD_FLAGS) -T $(lds) -o $@ $(obj)
 
 %.list: %.o
 	$(DUMP) $< $(DUMP_FLAGS) > $@

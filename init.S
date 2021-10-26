@@ -1,5 +1,5 @@
 
-.section init, "awx"
+.section .init, "ax"
 .global _start
 _start:
 	add r3, r0, r0
