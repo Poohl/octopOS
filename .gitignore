@@ -7,6 +7,8 @@
 !Makefile
 !makefile
 
+links
+
 # c output
 *.o
 *.bin
