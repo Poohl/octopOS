@@ -15,7 +15,7 @@ e.g. from https://git.imp.fu-berlin.de/koenigl/qemu-portux.git
 4. **GO INTO THAT FOLDER:**, `ln` works in mysterious ways: `cd links`
 5. create a symlink to your `qemu` binary, should be in `qemu-build/arm-softmmu/qemu-system-arm` using `ln`:
 ```
-ln -sT qemu ~/qemu-build/arm-softmmu/qemu-system-arm
+ln -sT ~/qemu-build/arm-softmmu/qemu-system-arm qemu
 ```
 6. build the project
 ```
