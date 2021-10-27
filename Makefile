@@ -1,6 +1,6 @@
-headers = $(wildcard *.h)
-c_src = $(wildcard *.c)
-S_src = $(wildcard *.S)
+headers = $(wildcard *.h) $(wildcard */*.h)
+c_src = $(wildcard *.c) $(wildcard */*.c)
+S_src = $(wildcard *.S) $(wildcard */*.S)
 obj = $(c_src:.c=.o) $(S_src:.S=.o)
 prod = kernel.elf
 lds = kernel.lds
@@ -9,7 +9,7 @@ dumps = $(obj:.o=.list) $(prod:.elf=.list)
 AS = arm-none-eabi-as
 CC = arm-none-eabi-gcc
 CC_FLAGS = -Wall -mcpu=arm920t -O2 -c
-CC_FLAGS += -Wextra -ffreestanding
+CC_FLAGS += -Wextra -ffreestanding -I. -include default.h
 LD = arm-none-eabi-ld
 LD_FLAGS = 
 DUMP = arm-none-eabi-objdump
@@ -21,6 +21,7 @@ QEMU_DEBUG_FLAGS = -s -S
 all: $(prod) $(dumps)
 	@echo as: $(S_src)
 	@echo c: $(c_src)
+	@echo headers: $(headers)
 	@echo obj: $(obj)
 	@echo prod: $(prod)
 	@echo dumps: $(dumps)
