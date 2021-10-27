@@ -14,6 +14,7 @@ LD = arm-none-eabi-ld
 LD_FLAGS = 
 DUMP = arm-none-eabi-objdump
 DUMP_FLAGS = -fhd
+QEMU = links/qemu
 QEMU_FLAGS = -M portux920t -m 64M -nographic
 QEMU_DEBUG_FLAGS = -s -S
 
