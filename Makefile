@@ -42,7 +42,7 @@ all: $(prod) $(dumps)
 	$(DUMP) $< $(DUMP_FLAGS) > $@
 
 run: $(prod)
-	$(QEMU) $(QEMU_FLAGS) $(prod)
+	$(QEMU) $(QEMU_FLAGS) -kernel $(prod)
 
 debug: $(prod) $(dumps)
 	@echo run gdb-multiarch -ex "\"target remote localhost:1234\""
