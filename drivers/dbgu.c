@@ -1,6 +1,6 @@
 
 #include "default.h"
-
+#include "memory-map.h"
 
 // see page 330 of https://mycampus.imp.fu-berlin.de/access/content/group/90533309-52c5-4d21-b65c-97b90b130b6c/AT91RM9200.pdf
 typedef struct {
@@ -25,6 +25,7 @@ typedef struct {
 	volatile dbgu_mem_layout* controller;
 } dbgu_controller_driver;
 
+
 #define CONTROL_RESET_RX (1 << 2)
 #define CONTROL_ENABLE_RX (1 << 4)
 #define CONTROL_DISABLE_RX (1 << 5)
@@ -40,3 +41,61 @@ typedef struct {
 #define STATUS_TX_EMPTY (1 << 9)
 
 #define STATUS_ALL 0b1100 0000 0000 0000 0001 1010 1111 1011
+
+// at least this works
+void tst() {
+	dbgu_controller_driver dbgu_cd;
+	dbgu_cd.controller = (dbgu_mem_layout*) DBGU;
+	dbgu_cd.controller->control = CONTROL_ENABLE_TX;
+	while (!dbgu_cd.controller->status)	{}
+	dbgu_cd.controller->tx = 'h';
+	while (!dbgu_cd.controller->status)	{}
+	dbgu_cd.controller->tx = 'e';
+	while (!dbgu_cd.controller->status)	{}
+	dbgu_cd.controller->tx = 'l';
+	while (!dbgu_cd.controller->status)	{}
+	dbgu_cd.controller->tx = 'l';
+	while (!dbgu_cd.controller->status)	{}
+	dbgu_cd.controller->tx = 'o';
+	while (!dbgu_cd.controller->status)	{}
+	dbgu_cd.controller->tx = ' ';
+	while (!dbgu_cd.controller->status)	{}
+	dbgu_cd.controller->tx = 'w';
+	while (!dbgu_cd.controller->status)	{}
+	dbgu_cd.controller->tx = 'o';
+	while (!dbgu_cd.controller->status)	{}
+	dbgu_cd.controller->tx = 'r';
+	while (!dbgu_cd.controller->status)	{}
+	dbgu_cd.controller->tx = 'l';
+	while (!dbgu_cd.controller->status)	{}
+	dbgu_cd.controller->tx = 'd';
+	while (!dbgu_cd.controller->status)	{}
+	dbgu_cd.controller->tx = '!';
+	while (!dbgu_cd.controller->status)	{}
+	dbgu_cd.controller->tx = ' ';
+	while (!dbgu_cd.controller->status)	{}
+	dbgu_cd.controller->tx = ':';
+	while (!dbgu_cd.controller->status)	{}
+	dbgu_cd.controller->tx = ')';
+	while (!dbgu_cd.controller->status)	{}
+	dbgu_cd.controller->tx = '\n';
+
+}
+
+/*
+// dont know why the fuck this doesnt work
+// it does if int i is a const
+// why? WHY?!?!?!
+
+void print(char* str) {
+	dbgu_controller_driver dbgu_cd;
+	dbgu_cd.controller = (dbgu_mem_layout*) DBGU;
+	dbgu_cd.controller->control = CONTROL_ENABLE_TX;
+	
+	for (i ; str[i] != '\0'; i++) {
+		while (! dbgu_cd.controller->status) {}
+		dbgu_cd.controller->tx = str[i];
+	}
+
+} 
+*/

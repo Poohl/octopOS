@@ -2,8 +2,8 @@
 .section .init, "ax"
 .global _start
 _start:
-	b c_entry
-//will never get here, no stack means no return
-deadlock:
-	add r1, r2, r3
-	b deadlock
+        ldr     SP,=0x00270000  // and we have a stack... randomly sitting in the SRAM
+        bl      c_entry
+        
+.Lend:
+        b       .Lend           // nirvana-loop
