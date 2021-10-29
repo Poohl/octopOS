@@ -14,25 +14,39 @@ e.g. from https://git.imp.fu-berlin.de/koenigl/qemu-portux.git
 3. create a folder `octopos/links`
 4. **GO INTO THAT FOLDER:**, `ln` works in mysterious ways: `cd links`
 5. create a symlink to your `qemu` binary, should be in `qemu-build/arm-softmmu/qemu-system-arm` using `ln`:
-```
-$ ln -sT ~/qemu-build/arm-softmmu/qemu-system-arm qemu
-```
+    ```
+    $ ln -sT ~/qemu-build/arm-softmmu/qemu-system-arm qemu
+    ```
 6. build the project
-```
-$ make
-```
-7. Optional: run the project `make debug`  
-in another terminal enter the displayed command to connect gdb  
-To quit `qemu` enter CTRL+a followd by x into its terminal
+    ```
+    $ make
+    ```
+7. run the project (on your local machine):
+    ```
+    $ make run
+    ```
+    In order to run the kernel on andorra, follow instructions below.
+
+8. optional: run the project in debug mode
+    ```
+    $ make debug
+    ```
+    in another terminal enter the displayed command to connect gdb; something like:
+    ```
+    gdb-multiarch -ex "target remote localhost:1234"
+    ```
+
+
+**Note:** To quit `qemu` enter CTRL+a followd by x into its terminal.
 
 ## test kernel on andorra
 This provides the possibility to test the kernel without having a local build of qemu.
 
 1. build `kernel.elf` on your machine:
-```
-$ make all
-```
+    ```
+    $ make all
+    ```
 2. test it on andorra by running:
-```
-$ sh andorra_tst.sh [FU-USERNAME]
-```
+    ```
+    $ sh andorra_tst.sh [FU-USERNAME]
+    ```
