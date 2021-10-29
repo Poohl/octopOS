@@ -7,6 +7,10 @@ SECTIONS
 	
 	/* ahh, yes. The empty & unused section ld is in love with */
 	.data : { *(.data) }
+	
+	/* and once more with feeling */
+	.rodata : { *(.rodata) }
+
 
 	/* FUCK OFF LD, We don't want your bullshit */
 	/DISCARD/ : {*(*)}

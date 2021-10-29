@@ -9,8 +9,7 @@
 
 void c_entry(void) {
 
-	tst();
-	// print("wtf?");
+	print("Hello world! :)\n");
 }
 
 
