@@ -9,8 +9,9 @@ SECTIONS
 	.data : { *(.data) }
 	
 	/* and once more with feeling */
-	.rodata : { *(.rodata) }
+	.rodata : { *(.rodata*) }
 
+	.bss : { *(.bss)}
 
 	/* FUCK OFF LD, We don't want your bullshit */
 	/DISCARD/ : {*(*)}

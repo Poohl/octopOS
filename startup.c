@@ -2,6 +2,7 @@
 #include "memory-map.h"
 #include "drivers/dbgu.h"
 #include "drivers/unbuffered_byte_stream.h"
+#include "printf.h"
 
 // needed to prevent gcc from optimizing c_entry out.
 #pragma GCC push_options
@@ -20,6 +21,10 @@ void c_entry(void) {
 		.put_byte = &dbgu_put_byte
 	};
 	unbuff_out_write(&dbgu_out, 4, "test");
+
+	printf_init(&dbgu_out, &unbuff_out_write);
+
+	printf("This is a simple test\n");
 
 	print("Hello world! :)\n");
 }

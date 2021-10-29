@@ -1,4 +1,7 @@
 
+#ifndef UNBUFFERED_BYTE_STREAM_H
+#define UNBUFFERED_BYTE_STREAM_H
+
 #include "default.h"
 
 typedef struct {
@@ -19,3 +22,5 @@ typedef struct {
 sequence_io_status unbuff_out_write(unbuffered_outstream_driver* self, uint len, const byte* data);
 
 sequence_io_status unbuff_out_read(unbuffered_instream_driver* self, uint len, byte* buff);
+
+#endif

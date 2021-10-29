@@ -52,7 +52,7 @@ int dbgu_init(dbgu_controller_driver* self) {
 	return 0;
 }
 
-i32 dbgu_put_byte(dbgu_controller_driver* self, const byte c) {
+int dbgu_put_byte(dbgu_controller_driver* self, const byte c) {
 	u32 s = 0;
 	while (!(s = (self->controller->status & ~(STATUS_RX_READY))));
 	if (s & (STATUS_ERR_OVERRUN | STATUS_ERR_FRAME | STATUS_ERR_PARITY)) {
@@ -63,7 +63,7 @@ i32 dbgu_put_byte(dbgu_controller_driver* self, const byte c) {
 	return 0;
 }
 
-i32 dbgu_get_byte(dbgu_controller_driver* self) {
+int dbgu_get_byte(dbgu_controller_driver* self) {
 	u32 s = 0;
 	while (!(s = (self->controller->status & ~(STATUS_TX_READY | STATUS_TX_EMPTY))));
 	if (s & (STATUS_ERR_OVERRUN | STATUS_ERR_FRAME | STATUS_ERR_PARITY)) {
