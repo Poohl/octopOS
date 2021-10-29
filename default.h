@@ -16,4 +16,6 @@ typedef int64_t i64;
 
 typedef char byte;
 
+typedef unsigned int uint;
+
 #endif
