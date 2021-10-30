@@ -1,7 +1,8 @@
 
 #include "memory-map.h"
 #include "drivers/dbgu.h"
-#include "printf.h"
+#include <string.h>
+#include <stdio.h>
 
 // needed to prevent gcc from optimizing c_entry out.
 #pragma GCC push_options
@@ -63,6 +64,8 @@ void c_entry(void) {
 	dbgu_init();
 	logo();
 	printfdemo();
+	int a,b;
+	memcpy(&a, &b, sizeof(int));
 }
 
 #pragma GCC pop_options

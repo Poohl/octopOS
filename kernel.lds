@@ -48,6 +48,8 @@ SECTIONS
 	.ARM.attributes 0 : { KEEP (*(.ARM.attributes)) KEEP (*(.gnu.attributes)) }
 	.note.gnu.arm.ident 0 : { KEEP (*(.note.gnu.arm.ident)) }
 
+	.COMMON : { *(COMMON) }
+
 	/* FUCK OFF LD, We don't want your bullshit */
 	/DISCARD/ : {*(*)}
 }

@@ -12,7 +12,8 @@ CC_FLAGS = -Wall -mcpu=arm920t -O2 -c
 CC_FLAGS += -Wextra -ffreestanding -I. -include default.h
 CC_DEBUG_FLAGS = -g
 LD = arm-none-eabi-ld
-LD_FLAGS = 
+LD_FLAGS = -L /usr/lib/gcc/arm-none-eabi/9.2.1/ -L /usr/lib/gcc/arm-none-eabi/9.2.1/../../../arm-none-eabi/lib/arm-none-eabi/9.2.1/ -L/usr/lib/gcc/arm-none-eabi/9.2.1/../../../arm-none-eabi/lib/
+
 DUMP = arm-none-eabi-objdump
 DUMP_FLAGS = -fhd
 QEMU = links/qemu
@@ -34,7 +35,7 @@ all: $(prod) $(dumps)
 	$(CC) -o $@ $(CC_FLAGS) $<
 
 %.elf: $(obj) $(lds)
-	$(LD) $(LD_FLAGS) -T $(lds) -o $@ $(obj)
+	$(LD) $(LD_FLAGS) -T $(lds) -o $@ $(obj) -static -lc -lgcc
 
 %.list: %.o
 	$(DUMP) $< $(DUMP_FLAGS) > $@
