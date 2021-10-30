@@ -1,15 +1,12 @@
 
-#include "memory-map.h"
-#include "drivers/unbuffered_byte_stream.h"
 #include <stdarg.h>
 #include "printf.h"
+#include "interfaces.h"
 
-static void* outstream;
-static sequence_io_status(*write)(void*, uint, const byte*);
+static const if_drv_outsteam* out_handle;
 
-void printf_init(void* _outstream, sequence_io_status(*_write)(void*, uint, const byte*)) {
-	outstream = _outstream;
-	write = _write;
+void printf_init(const if_drv_outsteam* _out_handle) {
+	out_handle = _out_handle;
 }
 
 static void add_to_sequence_io_status(sequence_io_status* dest, const sequence_io_status* src) {
@@ -31,7 +28,7 @@ sequence_io_status printf(char* format, ...) {
 	while (*cursor) {
 		// run to the next '%'
 		for (cursor = format; *cursor && *cursor != '%'; ++cursor);
-		hw_out = (*write)(outstream, cursor - format, format);
+		hw_out = (*out_handle->write)(out_handle->outstream, cursor - format, format);
 		add_to_sequence_io_status(&out, &hw_out);
 		format = cursor;
 		if (out.err || !*cursor)
@@ -39,19 +36,19 @@ sequence_io_status printf(char* format, ...) {
 		++cursor;
 		switch (*cursor) {
 			case 0:
-				hw_out = (*write)(outstream, 1, cursor - 1);
+				hw_out = (*out_handle->write)(out_handle->outstream, 1, cursor - 1);
 				break;
 			case 'c':
 				c = (char) va_arg(args, int);
-				hw_out = (*write)(outstream, 1, &c);
+				hw_out = (*out_handle->write)(out_handle->outstream, 1, &c);
 				break;
 			case 's':
 				str = va_arg(args, char*);
 				for (len = 0; str[len]; ++len);
-				hw_out = (*write)(outstream, len, str);
+				hw_out = (*out_handle->write)(out_handle->outstream, len, str);
 				break;
 			default:
-				hw_out = (*write)(outstream, 5, "%ERR:");
+				hw_out = (*out_handle->write)(out_handle->outstream, 5, "%ERR:");
 				add_to_sequence_io_status(&out, &hw_out);
 				if (out.err)
 					return out;
@@ -59,17 +56,19 @@ sequence_io_status printf(char* format, ...) {
 			case 'x':
 				/* fall through */
 			case 'p':
-				pos = 10;
+				pos = 9;
 				for (u32 num = va_arg(args, u32); num; num >>= 4, --pos)
 					buff[pos] = lookuptable[num & 0xF];
 				buff[--pos] = 'x';
 				buff[--pos] = '0';
-				hw_out = (*write)(outstream, 10-pos, &buff[pos]);
+				hw_out = (*out_handle->write)(out_handle->outstream, 10-pos, &buff[pos]);
 				break;
 		}
 		add_to_sequence_io_status(&out, &hw_out);
 			if (out.err)
 				return out;
+		++cursor;
+		format = cursor;
 	}
 	return out;
 }

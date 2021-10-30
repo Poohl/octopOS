@@ -5,7 +5,7 @@
 #include "default.h"
 #include "drivers/unbuffered_byte_stream.h"
 
-void printf_init(void* _outstream, sequence_io_status(*_write)(void*, uint, const byte*));
+void printf_init(const if_drv_outsteam* _out_handle);
 
 sequence_io_status printf(char* format, ...);
 
