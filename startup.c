@@ -10,7 +10,7 @@
 
 void c_entry(void) {
 
-	if_hw_mem_dbgu* dbgu = (if_hw_mem_dbgu*) DBGU;
+	
 	dbgu_init();
 	dbgu_put_byte('#');
 

@@ -6,7 +6,7 @@
 #include "interfaces.h"
 
 int dbgu_put_byte(byte c);
-
+int dbgu_init();
 int dbgu_get_byte();
 
 sequence_io_status dbgu_write(uint len, const byte* data);

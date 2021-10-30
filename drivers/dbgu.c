@@ -28,12 +28,7 @@
 static if_hw_mem_dbgu* dbgu;
 
 int dbgu_init() {
-	/* I'd expect something like tis to be needed, but I'm not messing up working code
-	child->interrupt_disable = STATUS_ALL;
-	child->baudrate_generator = 1;
-	child->mode = MODE_NORMAL | MODE_PARITY_EVEN;
-	child->control = CONTROL_DISABLE_TX | CONTROL_DISABLE_RX;
-	*/
+	dbgu = (if_hw_mem_dbgu*) DBGU;
 	return 0;
 }
 
