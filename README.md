@@ -33,7 +33,7 @@ e.g. from https://git.imp.fu-berlin.de/koenigl/qemu-portux.git
     ```
     in another terminal enter the displayed command or run the debug script:
     ```
-    sh debug.sh
+    $ sh debug.sh
     ```
 
 
