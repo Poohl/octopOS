@@ -54,7 +54,7 @@ sequence_io_status printf(char* format, ...) {
 				pos = 9;
 				for (u32 num = va_arg(args, u32); num; num >>= 4, --pos)
 					buff[pos] = lookuptable[num & 0xF];
-				buff[--pos] = 'x';
+				buff[pos] = 'x';
 				buff[--pos] = '0';
 				hw_out = dbgu_write(10-pos, &buff[pos]);
 				break;
