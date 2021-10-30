@@ -1,7 +1,7 @@
 
 #include "memory-map.h"
 #include "drivers/dbgu.h"
-#include "printf.h"
+#include "libs/printf.h"
 #include "fluff/fluff.h"
 
 // needed to prevent gcc from optimizing c_entry out.

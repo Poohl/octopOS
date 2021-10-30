@@ -1,6 +1,6 @@
 #include "memory-map.h"
 #include "drivers/dbgu.h"
-#include "printf.h"
+#include "libs/printf.h"
 
 
 /* this function prints ../fluff/banner.txt */
