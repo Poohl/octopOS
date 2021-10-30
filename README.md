@@ -31,9 +31,9 @@ e.g. from https://git.imp.fu-berlin.de/koenigl/qemu-portux.git
     ```
     $ make debug
     ```
-    in another terminal enter the displayed command to connect gdb; something like:
+    in another terminal enter the displayed command or run the debug script:
     ```
-    gdb-multiarch -ex "target remote localhost:1234"
+    sh debug.sh
     ```
 
 
