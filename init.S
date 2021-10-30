@@ -6,4 +6,5 @@ _start:
         bl      c_entry
         
 .Lend:
+        wfi                     // find peace
         b       .Lend           // nirvana-loop
