@@ -69,3 +69,9 @@ end:
 	va_end(args);
 	return out;
 }
+
+/* print char c n times -- used for img compression */
+void multiprint(char c, int n) {
+	for (int i = 0; i < n; i++)
+		dbgu_put_byte(c);
+}
