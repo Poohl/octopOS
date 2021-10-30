@@ -26,7 +26,8 @@ sequence_io_status printf(char* format, ...) {
 		add_to_sequence_io_status(&out, &hw_out);
 		format = cursor;
 		if (out.err || !*cursor)
-			return out;
+			goto end;
+
 		++cursor;
 		switch (*cursor) {
 			case 0:
@@ -44,8 +45,8 @@ sequence_io_status printf(char* format, ...) {
 			default:
 				hw_out = dbgu_write(5, "%ERR:");
 				add_to_sequence_io_status(&out, &hw_out);
-				if (out.err)
-					return out;
+				if (out.err) 
+					goto end;
 				/* fall through */
 			case 'x':
 				/* fall through */
@@ -59,10 +60,12 @@ sequence_io_status printf(char* format, ...) {
 				break;
 		}
 		add_to_sequence_io_status(&out, &hw_out);
-			if (out.err)
-				return out;
+		if (out.err)
+			goto end;
 		++cursor;
 		format = cursor;
 	}
+end:
+	va_end(args);
 	return out;
 }

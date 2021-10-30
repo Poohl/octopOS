@@ -17,6 +17,8 @@ void c_entry(void) {
 	printf("This is a simple test\n");
 
 	printf("This is a more complicated test %c %x %s\n", '1', 0x23, "456");
+	printf("This is a more complicated test %c %p %s\n", '1', 0x23, "456");
+	printf("This is a more complicated test %n %n %n %c %x %s\n", '1', 0x23, "456");
 
 }
 
