@@ -48,7 +48,7 @@ run: $(prod)
 debug: CC_FLAGS += $(CC_DEBUG_FLAGS)
 debug: QEMU_FLAGS += $(QEMU_DEBUG_FLAGS)
 debug: $(prod) $(dumps)
-	@echo run gdb-multiarch -s kernel.elf -ex "\"target remote localhost:1234\"" -ex "layout split"
+	@echo run gdb-multiarch -s kernel.elf -ex "\"target remote localhost:1234\"" -ex "\"layout split\""
 	$(QEMU) $(QEMU_FLAGS) -kernel $(prod)
 
 .SECONDARY: $(obj)

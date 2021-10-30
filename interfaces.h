@@ -32,37 +32,4 @@ typedef struct {
 	byte pdc[0x124-0x100+sizeof(u32)];
 } if_hw_mem_dbgu;
 
-//////////////////////////////////////////////////
-// Software driver interfaces if_drv
-//////////////////////////////////////////////
-
-/*
-	Structure for these is always the same:
-	- a pointer to the underlying layer
-	- a bunch of functionpointers to the implementations
-	so basically vtables
-
-	Note that in the current implemetnaion, the driver does not actully decide how it's own interface is used.
-*/
-
-typedef struct {
-	void* byte_device;
-	int (*put_byte)(void*, byte);
-} if_drv_byte_outstream;
-
-typedef struct {
-	void* byte_device;
-	int (*get_byte)(void*);
-} if_drv_byte_instream;
-
-typedef struct {
-	void* outstream;
-	sequence_io_status (*write)(void*, uint, const byte*);
-} if_drv_outsteam;
-
-typedef struct {
-	void* instream;
-	sequence_io_status (*read)(void*, uint, byte*);
-} if_drv_insteam;
-
 #endif

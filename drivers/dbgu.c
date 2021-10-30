@@ -2,6 +2,7 @@
 #include "dbgu.h"
 
 #include "default.h"
+#include "interfaces.h"
 #include "memory-map.h"
 
 #define CONTROL_RESET_RX (1 << 2)
@@ -23,7 +24,10 @@
 
 #define STATUS_ALL 0b1100 ## 0000 ## 0000 ## 0000 ## 0001 ## 1010 ## 1111 ## 1011
 
-int dbgu_init(if_hw_mem_dbgu* child) {
+
+static if_hw_mem_dbgu* dbgu;
+
+int dbgu_init() {
 	/* I'd expect something like tis to be needed, but I'm not messing up working code
 	child->interrupt_disable = STATUS_ALL;
 	child->baudrate_generator = 1;
@@ -33,24 +37,47 @@ int dbgu_init(if_hw_mem_dbgu* child) {
 	return 0;
 }
 
-int dbgu_put_byte(if_hw_mem_dbgu* child, byte c) {
+int dbgu_put_byte(byte c) {
 	u32 s = 0;
-	while (!(s = (child->status & ~(STATUS_RX_READY))));
+	while (!(s = (dbgu->status & ~(STATUS_RX_READY))));
 	if (s & (STATUS_ERR_OVERRUN | STATUS_ERR_FRAME | STATUS_ERR_PARITY)) {
-		child->control = CONTROL_RESET_STATUS_BITS;
+		dbgu->control = CONTROL_RESET_STATUS_BITS;
 		return s & (STATUS_ERR_OVERRUN | STATUS_ERR_FRAME | STATUS_ERR_PARITY);
 	}
-	child->tx = c;
+	dbgu->tx = c;
 	return 0;
 }
 
-int dbgu_get_byte(if_hw_mem_dbgu* child) {
+int dbgu_get_byte() {
 	u32 s = 0;
-	while (!(s = (child->status & ~(STATUS_TX_READY | STATUS_TX_EMPTY))));
+	while (!(s = (dbgu->status & ~(STATUS_TX_READY | STATUS_TX_EMPTY))));
 	if (s & (STATUS_ERR_OVERRUN | STATUS_ERR_FRAME | STATUS_ERR_PARITY)) {
-		child->control = CONTROL_RESET_STATUS_BITS;
+		dbgu->control = CONTROL_RESET_STATUS_BITS;
 		return - (int) (s & (STATUS_ERR_OVERRUN | STATUS_ERR_FRAME | STATUS_ERR_PARITY));
 	}
-	return child->rx;
+	return dbgu->rx;
 }
 
+sequence_io_status dbgu_write(uint len, const byte* data) {
+	sequence_io_status out = {};
+	for (out.io = 0; out.io < len &&
+			!(out.err = dbgu_put_byte(data[out.io]));
+		++out.io);
+	if (out.err)
+		out.io -= 1;
+	return out;
+}
+
+sequence_io_status dbgu_read(uint len, byte* buff) {
+	sequence_io_status out = {};
+	for (out.io = 0; out.io < len &&
+			0 <= (out.err = dbgu_get_byte());
+		++out.io) {
+			buff[out.io] = (byte) out.err;
+		}
+	if (out.err < 0)
+		out.io -= 1;
+	else
+		out.err = 0;
+	return out;
+}

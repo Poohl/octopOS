@@ -5,11 +5,12 @@
 #include "default.h"
 #include "interfaces.h"
 
-int dbgu_init(if_hw_mem_dbgu* child);
+int dbgu_put_byte(byte c);
 
-int dbgu_put_byte(if_hw_mem_dbgu* child, byte c);
+int dbgu_get_byte();
 
-int dbgu_get_byte(if_hw_mem_dbgu* child);
+sequence_io_status dbgu_write(uint len, const byte* data);
 
-void print(char* str);
+sequence_io_status dbgu_read(uint len, byte* buff);
+
 #endif
