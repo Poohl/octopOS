@@ -25,16 +25,17 @@
 #define STATUS_ALL 0b1100 ## 0000 ## 0000 ## 0000 ## 0001 ## 1010 ## 1111 ## 1011
 
 
-static if_hw_mem_dbgu* dbgu;
+static volatile if_hw_mem_dbgu* dbgu;
 
 int dbgu_init() {
 	dbgu = (if_hw_mem_dbgu*) DBGU;
+	dbgu->control = CONTROL_ENABLE_RX | CONTROL_RESET_STATUS_BITS;
 	return 0;
 }
 
 int dbgu_put_byte(byte c) {
 	u32 s = 0;
-	while (!(s = (dbgu->status & ~(STATUS_RX_READY))));
+	while (!(s = (dbgu->status & (STATUS_TX_EMPTY | STATUS_TX_READY | STATUS_ERR_OVERRUN | STATUS_ERR_FRAME | STATUS_ERR_PARITY))));
 	if (s & (STATUS_ERR_OVERRUN | STATUS_ERR_FRAME | STATUS_ERR_PARITY)) {
 		dbgu->control = CONTROL_RESET_STATUS_BITS;
 		return s & (STATUS_ERR_OVERRUN | STATUS_ERR_FRAME | STATUS_ERR_PARITY);
@@ -45,7 +46,7 @@ int dbgu_put_byte(byte c) {
 
 int dbgu_get_byte() {
 	u32 s = 0;
-	while (!(s = (dbgu->status & ~(STATUS_TX_READY | STATUS_TX_EMPTY))));
+	while (!(s = (dbgu->status & (STATUS_RX_READY | STATUS_ERR_OVERRUN | STATUS_ERR_FRAME | STATUS_ERR_PARITY))));
 	if (s & (STATUS_ERR_OVERRUN | STATUS_ERR_FRAME | STATUS_ERR_PARITY)) {
 		dbgu->control = CONTROL_RESET_STATUS_BITS;
 		return - (int) (s & (STATUS_ERR_OVERRUN | STATUS_ERR_FRAME | STATUS_ERR_PARITY));
