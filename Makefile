@@ -10,6 +10,7 @@ AS = arm-none-eabi-as
 CC = arm-none-eabi-gcc
 CC_FLAGS = -Wall -mcpu=arm920t -O2 -c
 CC_FLAGS += -Wextra -ffreestanding -I. -include default.h
+CC_DEBUG_FLAGS = -g
 LD = arm-none-eabi-ld
 LD_FLAGS = 
 DUMP = arm-none-eabi-objdump
@@ -44,9 +45,11 @@ all: $(prod) $(dumps)
 run: $(prod)
 	$(QEMU) $(QEMU_FLAGS) -kernel $(prod)
 
+debug: CC_FLAGS += $(CC_DEBUG_FLAGS)
+debug: QEMU_FLAGS += $(QEMU_DEBUG_FLAGS)
 debug: $(prod) $(dumps)
-	@echo run gdb-multiarch -ex "\"target remote localhost:1234\""
-	$(QEMU) $(QEMU_FLAGS) $(QEMU_DEBUG_FLAGS) -kernel $(prod)
+	@echo run gdb-multiarch -s kernel.elf -ex "\"target remote localhost:1234\"" -ex "layout split"
+	$(QEMU) $(QEMU_FLAGS) -kernel $(prod)
 
 .SECONDARY: $(obj)
 .PHONY: clean
