@@ -9,17 +9,23 @@
 
 
 void c_entry(void) {
-
-	
 	dbgu_init();
-	dbgu_put_byte('#');
+	int ret = dbgu_put_byte('#');
 
-	printf("This is a simple test\n");
+	printf("Please enter a character to get some info:\n");
 
-	printf("This is a more complicated test %c %x %s\n", '1', 0x23, "456");
-	printf("This is a more complicated test %c %p %s\n", '1', 0x23, "456");
-	printf("This is a more complicated test %n %n %n %c %x %s\n", '1', 0x23, "456");
+	int c = dbgu_get_byte();
 
+	if (c <= 0) {
+		printf("Error %x reading that!\n", c);
+		printf("Here are some other nicely formatted things: %p, %x, %c, %s\n", &c_entry, 0x12, '3', "45");
+	} else {
+		printf("You entered a %c, acsii index %x and it's currently stored at %p in my memory\n", c, c, &c);
+	}
+
+	printf("And heres what happnes with unknown formats: %a %b %% %f\n", 1, 2, 3, 4);
+
+	printf("done");
 }
 
 #pragma GCC pop_options
