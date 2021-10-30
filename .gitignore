@@ -9,6 +9,10 @@
 
 links
 
+# develoment helpers
+.vscode
+*.pdf
+
 # c output
 *.o
 *.bin
