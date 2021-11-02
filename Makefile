@@ -51,6 +51,9 @@ debug: $(prod) $(dumps)
 	@echo run gdb-multiarch -s kernel.elf -ex "\"target remote localhost:1234\"" -ex "\"layout split\""
 	$(QEMU) $(QEMU_FLAGS) -kernel $(prod)
 
+wordcount:
+	cat $(S_src) $(c_src) $(headers) | wc
+
 .SECONDARY: $(obj)
 .PHONY: clean
 clean:
