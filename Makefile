@@ -7,8 +7,9 @@ lds = kernel.lds
 dumps = $(obj:.o=.list) $(prod:.elf=.list)
 
 AS = arm-none-eabi-as
+AS_FLAGS = -march=armv6-m
 CC = arm-none-eabi-gcc
-CC_FLAGS = -Wall -mcpu=arm920t -O2 -c
+CC_FLAGS = -Wall -march=armv6-m -O2 -c
 CC_FLAGS += -Wextra -ffreestanding -I. -include default.h
 CC_DEBUG_FLAGS = -g
 LD = arm-none-eabi-ld

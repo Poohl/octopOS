@@ -1,8 +1,10 @@
 ENTRY(_start)
 SECTIONS
 {
-	. = 0x200000;
-	.init : { *(.init) }
+	. = 0x10000000;
+	.boot2 : { *(.boot2) }
+	. = 0x10000100;
+	.vectors : { *(.vectors) }
 	.text : { *(.text) }
 	
 	/* ahh, yes. The empty & unused section ld is in love with */
