@@ -1,5 +1,7 @@
-
+# what platform to build for
 platform:=pi-pico
+# what folder to build into
+# cannot include ../
 build=debug
 
 AS = arm-none-eabi-as
