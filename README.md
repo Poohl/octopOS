@@ -17,19 +17,19 @@ e.g. from https://git.imp.fu-berlin.de/koenigl/qemu-portux.git
     ```
     $ ln -sT ~/qemu-build/arm-softmmu/qemu-system-arm qemu
     ```
-6. build the project
+6. build the project, optinally define your board and destination (defaults shown)
     ```
-    $ make
+    $ make board=portux build=release
     ```
 7. run the project (on your local machine):
     ```
-    $ make run
+    $ make board=portux build=release run
     ```
     In order to run the kernel on andorra, follow instructions below.
 
 8. optional: run the project in debug mode
     ```
-    $ make debug
+    $ make board=portux build=debug debug
     ```
     in another terminal enter the displayed command or run the debug script:
     ```

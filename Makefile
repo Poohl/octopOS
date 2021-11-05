@@ -2,16 +2,16 @@
 platform:=pi-pico
 # what folder to build into
 # cannot include ../
-build=debug
+build=release-$(platform)
 
 AS = arm-none-eabi-as
 AS_FLAGS = -march=armv6-m
-AS_DEBUG_FLAGS = 
+AS_DEBUG_FLAGS = -DDEBUG
 
 CC = arm-none-eabi-gcc
 CC_FLAGS = -Wall -O2 -c -Wextra -ffreestanding
 CC_FLAGS += -I. -I./boards/$(platform) -include default.h
-CC_DEBUG_FLAGS = -g
+CC_DEBUG_FLAGS = -g -DDEBUG
 
 LD = arm-none-eabi-ld
 LD_FLAGS = 
@@ -103,12 +103,16 @@ debug: AS_FLAGS += $(AS_DEBUG_FLAGS)
 debug: CC_FLAGS += $(CC_DEBUG_FLAGS)
 debug: LD_FLAGS += $(LD_DEBUG_FLAGS)
 debug: QEMU_FLAGS += $(QEMU_DEBUG_FLAGS)
+debug: build = debug-$(platform)
 debug: $(prod) $(dumps)
 	@echo Debug build complete
 
 debug_run: debug
-	@echo run gdb-multiarch -s kernel.elf -ex "\"target remote localhost:1234\"" -ex "\"layout split\""
+	@echo run gdb-multiarch -s $(prod) -ex "\"target remote localhost:1234\"" -ex "\"layout split\""
 	$(QEMU) $(QEMU_FLAGS) -kernel $(prod)
+
+debugger:
+	run gdb-multiarch -s $(prod) -ex "\"target remote localhost:1234\"" -ex "\"layout split\""
 
 wordcount:
 	cat $(S_src) $(c_src) $(headers) | wc
