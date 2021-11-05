@@ -5,7 +5,7 @@ platform:=pi-pico
 build=release-$(platform)
 
 AS = arm-none-eabi-as
-AS_FLAGS = -march=armv6-m
+AS_FLAGS =
 AS_DEBUG_FLAGS = -DDEBUG
 
 CC = arm-none-eabi-gcc
