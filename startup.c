@@ -1,8 +1,8 @@
-#include "memory-map.h"
-#include "drivers/dbgu.h"
+//#include "memory-map.h"
+//#include "drivers/dbgu.h"
 #include "libs/printf.h"
-#include "fluff/fluff.h"
-#include "apps/demo.h"
+//#include "fluff/fluff.h"
+// #include "apps/demo.h"
 
 // needed to prevent gcc from optimizing c_entry out.
 #pragma GCC push_options
@@ -12,11 +12,12 @@
 /* MAIN */
 void c_entry(void) {
 	/* init driver */
-	dbgu_init();
+	//dbgu_init();
 
 	/* run stuff */
-	print_banner();
-	io_demo();
+	//print_banner();
+	//io_demo();
+	printf("Hello word");
 
 }
 

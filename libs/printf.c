@@ -1,6 +1,6 @@
 #include <stdarg.h>
 #include "printf.h"
-#include "interfaces.h"
+#include "../interfaces.h"
 
 static void add_to_sequence_io_status(sequence_io_status* dest, const sequence_io_status* src) {
 	dest->io += src->io;

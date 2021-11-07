@@ -1,7 +1,7 @@
 #include "fluff.h"
-#include "memory-map.h"
-#include "drivers/dbgu.h"
-#include "libs/printf.h"
+//#include "memory-map.h"
+//#include "drivers/dbgu.h"
+#include "../libs/printf.h"
 
 
 void print_banner() {
