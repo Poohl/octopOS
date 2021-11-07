@@ -38,12 +38,12 @@ clean :
 	$(CC) $(CC_FLAGS) -o $@ $<
 
 kernel.elf : $(obj) $(lds)
-	$(ARMGNU)-ld vectors.o notmain.o -T $(lds) -o $@ $(obj)
-	$(ARMGNU)-objdump -D notmain.elf > notmain.list
+	$(ARMGNU)-ld -T $(lds) -o $@ $(obj)
+#	$(ARMGNU)-objdump -D notmain.elf > notmain.list
 
 kernel.img : kernel.elf
-	$(ARMGNU)-objcopy --srec-forceS3 notmain.elf -O srec notmain.srec
-	$(ARMGNU)-objcopy notmain.elf -O binary kernel.img
+	$(ARMGNU)-objcopy --srec-forceS3 kernel.elf -O srec kernel.srec
+	$(ARMGNU)-objcopy kernel.elf -O binary kernel.img
 
 
 

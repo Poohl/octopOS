@@ -99,9 +99,9 @@ int dbgu_put_byte(byte c)
 	return 0;	// lol
 }
 
-int dbgu_get_byte(byte c)
+int dbgu_get_byte()
 {
-	/* joke's on you this shit does nuthin*/
+	/* joke's on you shit does nuthin*/
 	return 42;
 }
 

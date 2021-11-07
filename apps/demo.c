@@ -4,6 +4,7 @@
 #include "../libs/printf.h"
 
 void io_demo() {
+	/*
 	int c;
 	printf("printf demo mode -- PRESS ANY KEY\n");
 	printf("(press $ to quit)\n");
@@ -22,4 +23,5 @@ void io_demo() {
 	printf("end of demo loop.\n");
 	printf("And heres what happnes with unknown formats:\n %a %b %% %f\n", 1, 2, 3, 4);	
 	printf("done. (press ^a then x to quit qemu)");
+	*/
 }
