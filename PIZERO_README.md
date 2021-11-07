@@ -17,7 +17,7 @@ Your favorite OS is now available for the RaspberryPi Zero. Well, printf works s
     - 4.b.
         * get the super cool bootloader from https://github.com/dwelch67/raspberrypi-zero. either get `bootloader.img` or build it    yourself (from `/bootloader10`). rename it `kernel.img` and put it on the sd-card. put that into the raspi.
         * establish a uart-connection to your raspi
-        * run minicom (Bps/par/bits: 115200 8N1, no flow control)
+        * run `minicom` (Bps/par/bits: 115200 8N1, no flow control)
         * send `kernel.srec` (as ascii)
         * you might have to press `g` (for go) to start
         * done.
