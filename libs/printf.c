@@ -19,6 +19,23 @@ sequence_io_status printf(char* format, ...) {
 		.err = 0
 	};
 	sequence_io_status hw_out;
+	/*
+	 * How this works:
+	 * format points at remainder of the format string,
+	 * cursor runs ahead and points at whatever is going to be formatted next.
+	 * 
+	 * the loop then explosts the fact that a format sting is a sequence of %?
+	 * with constant strings in between. Thus it loops as follows:
+	 * 
+	 * while format left:
+	 *   write constant string
+	 *   if format left:
+	 *     pop arg
+	 *     format arg
+	 *     write arg
+	 * end:
+	 *   free(args)
+	 */
 	while (*cursor) {
 		// run to the next '%'
 		for (cursor = format; *cursor && *cursor != '%'; ++cursor);
@@ -28,10 +45,10 @@ sequence_io_status printf(char* format, ...) {
 		if (out.err || !*cursor)
 			goto end;
 
-		++cursor;
+		++cursor; // cursor is at a '%' here, the foramt char is next.
 		switch (*cursor) {
-			case 0:
-				hw_out = debug_write(1, cursor - 1);
+			case 0: // format string ends on a '%', we're friendly and print it.
+				hw_out = dbgu_write(1, cursor - 1);
 				break;
 			case 'c':
 				c = (char) va_arg(args, int);
@@ -51,6 +68,7 @@ sequence_io_status printf(char* format, ...) {
 			case 'x':
 				/* fall through */
 			case 'p':
+				// write the number into the buffer, back to front.
 				pos = 9;
 				for (u32 num = va_arg(args, u32); num; num >>= 4, --pos)
 					buff[pos] = lookuptable[num & 0xF];
