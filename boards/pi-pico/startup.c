@@ -1,5 +1,4 @@
-#include "memory-map.h"
-#include "drivers/dbgu.h"
+#include "drivers/uart.h"
 #include "libs/printf.h"
 #include "fluff/fluff.h"
 #include "apps/demo.h"
@@ -13,20 +12,19 @@ typedef void(*isr)();
 static void dontCare() {
 }
 
-void c_entry(void);
+void _start(void);
 
 isr vectors[] __attribute__((section(".vectors"))) = {
 	[0 ... 16+32] = &dontCare,
-	[0] = (isr) 0x20000000,
-	[1] = &c_entry
+	[0] = (isr) 0x20001000,
+	[1] = &_start
 };
 
 /* MAIN */
-void c_entry(void) {
-	/* init driver */
-	dbgu_init();
+void _start(void) {
 
-	/* run stuff */
+	uart_init();
+
 	print_banner();
 	io_demo();
 

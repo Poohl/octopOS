@@ -4,6 +4,8 @@
 #include "default.h"
 #include "interfaces.h"
 #include "memory-map.h"
+// we implement some of this
+#include "libs/hardware.h"
 
 #define CONTROL_RESET_RX (1 << 2)
 #define CONTROL_ENABLE_RX (1 << 4)
@@ -76,4 +78,17 @@ sequence_io_status dbgu_read(uint len, byte* buff) {
 	else
 		out.err = 0;
 	return out;
+}
+
+int debug_put_char(char c) {
+	return dbgu_put_byte(c);
+}
+int debug_get_char() {
+	return dbgu_get_byte();
+}
+sequence_io_status debug_write(uint len, const byte* data) {
+	return dbgu_write(len, data);
+}
+sequence_io_status debug_read(uint len, byte* buff) {
+	return dbgu_read(len, buff);
 }

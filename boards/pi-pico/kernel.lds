@@ -6,12 +6,13 @@ SECTIONS
 	. = 0x10000100;
 	.vectors : { *(.vectors) }
 	.text : { *(.text) }
-	
-	/* ahh, yes. The empty & unused section ld is in love with */
-	.data : { *(.data) }
-	
 	/* and once more with feeling */
 	.rodata : { *(.rodata*) }
+	
+	. = 0x20000000;
+	COMMON : { *(COMMON) }
+	/* ahh, yes. The empty & unused section ld is in love with */
+	.data : { *(.data) }
 
 	.bss : { *(.bss)}
 
@@ -51,5 +52,5 @@ SECTIONS
 	.note.gnu.arm.ident 0 : { KEEP (*(.note.gnu.arm.ident)) }
 
 	/* FUCK OFF LD, We don't want your bullshit */
-	/DISCARD/ : {*(*)}
+	/*/DISCARD/ : {*(*)}*/
 }
