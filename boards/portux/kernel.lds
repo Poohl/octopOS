@@ -6,6 +6,7 @@ SECTIONS
 	.text : { *(.text) }
 	
 	/* ahh, yes. The empty & unused section ld is in love with */
+	.COMMON : { *(COMMON)}
 	.data : { *(.data) }
 	
 	/* and once more with feeling */

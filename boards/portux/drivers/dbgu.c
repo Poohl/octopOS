@@ -4,6 +4,7 @@
 #include "default.h"
 #include "interfaces.h"
 #include "memory-map.h"
+#include "libs/hardware.h"
 
 #define CONTROL_RESET_RX (1 << 2)
 #define CONTROL_ENABLE_RX (1 << 4)
@@ -44,6 +45,10 @@ int dbgu_put_byte(byte c) {
 	return 0;
 }
 
+int debug_put_char(char c) {
+	return dbgu_put_byte(c);
+}
+
 int dbgu_get_byte() {
 	u32 s = 0;
 	while (!(s = (dbgu->status & (STATUS_RX_READY | STATUS_ERR_OVERRUN | STATUS_ERR_FRAME | STATUS_ERR_PARITY))));
@@ -54,26 +59,6 @@ int dbgu_get_byte() {
 	return dbgu->rx;
 }
 
-sequence_io_status dbgu_write(uint len, const byte* data) {
-	sequence_io_status out = {};
-	for (out.io = 0; out.io < len &&
-			!(out.err = dbgu_put_byte(data[out.io]));
-		++out.io);
-	if (out.err)
-		out.io -= 1;
-	return out;
-}
-
-sequence_io_status dbgu_read(uint len, byte* buff) {
-	sequence_io_status out = {};
-	for (out.io = 0; out.io < len &&
-			0 <= (out.err = dbgu_get_byte());
-		++out.io) {
-			buff[out.io] = (byte) out.err;
-		}
-	if (out.err < 0)
-		out.io -= 1;
-	else
-		out.err = 0;
-	return out;
+int debug_get_char() {
+	return dbgu_get_byte();
 }

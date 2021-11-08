@@ -1,6 +1,7 @@
 #include <stdarg.h>
 #include "printf.h"
 #include "interfaces.h"
+#include "hardware.h"
 
 static void add_to_sequence_io_status(sequence_io_status* dest, const sequence_io_status* src) {
 	dest->io += src->io;
@@ -21,7 +22,7 @@ sequence_io_status printf(char* format, ...) {
 	while (*cursor) {
 		// run to the next '%'
 		for (cursor = format; *cursor && *cursor != '%'; ++cursor);
-		hw_out = dbgu_write(cursor - format, format);
+		hw_out = debug_write(cursor - format, format);
 		add_to_sequence_io_status(&out, &hw_out);
 		format = cursor;
 		if (out.err || !*cursor)
@@ -30,19 +31,19 @@ sequence_io_status printf(char* format, ...) {
 		++cursor;
 		switch (*cursor) {
 			case 0:
-				hw_out = dbgu_write(1, cursor - 1);
+				hw_out = debug_write(1, cursor - 1);
 				break;
 			case 'c':
 				c = (char) va_arg(args, int);
-				hw_out = dbgu_write(1, &c);
+				hw_out = debug_write(1, &c);
 				break;
 			case 's':
 				str = va_arg(args, char*);
 				for (len = 0; str[len]; ++len);
-				hw_out = dbgu_write(len, str);
+				hw_out = debug_write(len, str);
 				break;
 			default:
-				hw_out = dbgu_write(5, "%ERR:");
+				hw_out = debug_write(5, "%ERR:");
 				add_to_sequence_io_status(&out, &hw_out);
 				if (out.err) 
 					goto end;
@@ -55,7 +56,7 @@ sequence_io_status printf(char* format, ...) {
 					buff[pos] = lookuptable[num & 0xF];
 				buff[pos] = 'x';
 				buff[--pos] = '0';
-				hw_out = dbgu_write(10-pos, &buff[pos]);
+				hw_out = debug_write(10-pos, &buff[pos]);
 				break;
 		}
 		add_to_sequence_io_status(&out, &hw_out);
