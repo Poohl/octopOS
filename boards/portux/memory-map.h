@@ -7,4 +7,6 @@
 #define DBGU 0xFFFFF200
 #define DBGU_END 0xFFFFF400
 
+#define AIC 0xFFFFF000
+
 #endif

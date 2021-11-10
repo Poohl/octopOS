@@ -48,7 +48,7 @@ sequence_io_status printf(char* format, ...) {
 		++cursor; // cursor is at a '%' here, the foramt char is next.
 		switch (*cursor) {
 			case 0: // format string ends on a '%', we're friendly and print it.
-				hw_out = dbgu_write(1, cursor - 1);
+				hw_out = debug_write(1, cursor - 1);
 				break;
 			case 'c':
 				c = (char) va_arg(args, int);
