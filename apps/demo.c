@@ -1,6 +1,5 @@
 #include "demo.h"
-#include "memory-map.h"
-#include "drivers/dbgu.h"
+#include "libs/hardware.h"
 #include "libs/printf.h"
 
 void io_demo() {
@@ -8,8 +7,8 @@ void io_demo() {
 	printf("printf demo mode -- PRESS ANY KEY\n");
 	printf("(press $ to quit)\n");
 	do {
-		int ret = dbgu_put_byte('#');
-		c = dbgu_get_byte();	
+		int ret = debug_put_char('#');
+		c = debug_get_char();	
 		if (c <= 0) {
 			printf("Error %x reading that!\n", c);
 			printf("Here are some other nicely formatted things: %p, %x, %c, %s\n", &io_demo, 0x12, '3', "45");

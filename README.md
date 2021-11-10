@@ -17,25 +17,24 @@ e.g. from https://git.imp.fu-berlin.de/koenigl/qemu-portux.git
     ```
     $ ln -sT ~/qemu-build/arm-softmmu/qemu-system-arm qemu
     ```
-6. build the project
+6. build the project, optinally define your board and type (defaults shown)
     ```
-    $ make
+    $ make board=portux build=release
     ```
 7. run the project (on your local machine):
     ```
-    $ make run
+    $ make board=portux build=release run
     ```
     In order to run the kernel on andorra, follow instructions below.
 
 8. optional: run the project in debug mode
     ```
-    $ make debug
+    $ make board=portux build=debug all
     ```
     in another terminal enter the displayed command or run the debug script:
     ```
-    $ sh debug.sh
+    $ make board=portux build=debug debugger
     ```
-
 
 **Note:** To quit `qemu` enter CTRL+a followd by x into its terminal.
 
@@ -50,3 +49,16 @@ This provides the possibility to test the kernel without having a local build of
     ```
     $ sh andorra_tst.sh [FU-USERNAME]
     ```
+
+## Currently supported features on various platforms
+
+| Platform | compile | flash + run | debugger |
+| --- | --- | --- | --- |
+| portux (in qemu) | yes | yes, with `run` | yes |
+| pi-pico | yes | no, see¹ | yes¹ |
+| pi-zero | | | |
+
+¹To run the code, you have to connect the pi-pico via SWD to openOCD and start the debugger pointed at the openOCD, like so:
+```
+make platform=pi-pico build=<you choose> debugger_target=<openOCD host>:<openOCD port> debugger_load=1 debugger
+```
