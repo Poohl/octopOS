@@ -2,8 +2,8 @@
 #ifndef DBGU_H
 #define DBGU_H
 
-#include "../default.h"
-#include "../interfaces.h"
+#include "default.h"
+#include "interfaces.h"
 
 extern void PUT32 ( unsigned int, unsigned int );
 extern unsigned int GET32 ( unsigned int );

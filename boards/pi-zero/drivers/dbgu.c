@@ -1,8 +1,8 @@
 
 #include "dbgu.h"
 
-#include "../default.h"
-#include "../interfaces.h"
+#include "default.h"
+#include "interfaces.h"
 #include "../memory-map.h"
 
 /*
@@ -130,3 +130,12 @@ sequence_io_status dbgu_read(uint len, byte* buff) {
 	return out;
 }
 */
+
+int debug_get_char() {
+	return dbgu_get_byte();
+}
+
+
+int debug_put_char(char c) {
+	return dbgu_put_byte(c);
+}

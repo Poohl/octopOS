@@ -1,9 +1,13 @@
 
 
-headers := $(shell find $(board_dir) -name '*.h')
-c_src := $(shell find $(board_dir) -name '*.c')
-S_src := $(shell find $(board_dir) -name '*.S')
+headers += $(shell find $(board_dir) -name '*.h')
+c_src += $(shell find $(board_dir) -name '*.c')
+S_src += $(shell find $(board_dir) -name '*.S')
 lds := $(board_dir)/kernel.lds
+
+prod += kernel.uf2
+%.uf2: %.elf
+	links/elf2uf2 $^ $@
 
 #LD_FLAGS += $(board_dir)/pi-pico.a
 LD_POST_FLAGS += /usr/lib/gcc/arm-none-eabi/9.2.1/thumb/v6-m/nofp/libgcc.a

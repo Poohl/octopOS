@@ -13,6 +13,8 @@ debug_load=
 # where to build to, the used value is just a default
 build_dir:=$(build)-$(platform)
 
+all: _all
+
 # used software and default flags
 AS = arm-none-eabi-as
 AS_FLAGS =
@@ -40,10 +42,6 @@ QEMU_DEBUG_FLAGS = -s -S
 # folders that include general code used regardless of platform
 src_dirs = apps drivers libs fluff
 
-# load platform specific config and sources
-board_dir := boards/$(platform)
-include $(board_dir)/Makefile
-
 # fix path
 #headers := $(addprefix boards/$(platform),$(headers))
 #c_src := $(addprefix boards/$(platform),$(c_src))
@@ -54,6 +52,10 @@ include $(board_dir)/Makefile
 headers += $(shell find $(src_dirs) -name '*.h')
 c_src += $(shell find $(src_dirs) -name '*.c')
 S_src += $(shell find $(src_dirs) -name '*.S')
+
+# load platform specific config and sources
+board_dir := boards/$(platform)
+include $(board_dir)/Makefile
 
 # load list of things to produce
 obj += $(c_src:.c=.o) $(S_src:.S=.o)
@@ -87,7 +89,7 @@ LD_POST_FLAGS += $(LD_DEBUG_POST_FLAGS)
 QEMU_FLAGS += $(QEMU_DEBUG_FLAGS)
 endif
 
-all: $(prod) $(dumps)
+_all: $(prod) $(dumps)
 	@echo as: $(S_src)
 	@echo c: $(c_src)
 	@echo headers: $(headers)
@@ -103,7 +105,8 @@ $(c_obj): $(build_dir)/%.o: %.c $(headers)
 	@mkdir -p $(@D)
 	$(CC) -o $@ $(CC_FLAGS) $<
 
-$(prod): $(build_dir)/%.elf: $(obj) $(lds)
+# this assumes the output is always called kernel.elf
+$(build_dir)/kernel.elf: $(obj) $(lds)
 	@mkdir -p $(@D)
 	$(LD) $(LD_PRE_FLAGS) -T $(lds) -o $@ $(obj) $(LD_POST_FLAGS)
 
