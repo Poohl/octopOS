@@ -11,13 +11,11 @@
 
 /* MAIN */
 void c_entry(void) {
-	/* init driver */
-	//dbgu_init();
 
 	/* run stuff */
 	print_banner();
-	//io_demo();
-	//printf("Hello word");
+	printf("(pi-zero edition)\n\n\r");
+	io_demo();
 
 }
 
