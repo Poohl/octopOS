@@ -19,21 +19,21 @@ e.g. from https://git.imp.fu-berlin.de/koenigl/qemu-portux.git
     ```
 6. build the project, optinally define your board and type (defaults shown)
     ```
-    $ make board=portux build=release
+    $ make platform=portux build=release
     ```
 7. run the project (on your local machine):
     ```
-    $ make board=portux build=release run
+    $ make platform=portux build=release run
     ```
     In order to run the kernel on andorra, follow instructions below.
 
 8. optional: run the project in debug mode
     ```
-    $ make board=portux build=debug all
+    $ make platform=portux build=debug debugger
     ```
     in another terminal enter the displayed command or run the debug script:
     ```
-    $ make board=portux build=debug debugger
+    $ sh debug.sh
     ```
 
 **Note:** To quit `qemu` enter CTRL+a followd by x into its terminal.
