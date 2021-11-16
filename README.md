@@ -29,11 +29,11 @@ e.g. from https://git.imp.fu-berlin.de/koenigl/qemu-portux.git
 
 8. optional: run the project in debug mode
     ```
-    $ make platform=portux build=debug debugger
+    $ make platform=portux build=debug run
     ```
     in another terminal enter the displayed command or run the debug script:
     ```
-    $ sh debug.sh
+    $ make platform=portux build=debug debugger
     ```
 
 **Note:** To quit `qemu` enter CTRL+a followd by x into its terminal.
@@ -43,7 +43,7 @@ This provides the possibility to test the kernel without having a local build of
 
 1. build `kernel.elf` on your machine:
     ```
-    $ make all
+    $ make platform=portux build=debug all
     ```
 2. test it on andorra by running:
     ```
