@@ -4,7 +4,8 @@
 _start:
 	ldr     SP,=0x00270000  // and we have a stack... randomly sitting in the SRAM
 	bl      c_entry
-        
+
 .Lend:
-	wfi                     // find peace
+//	wfi                     // find peace
+.word 0xe320f003
 	b       .Lend           // nirvana-loop

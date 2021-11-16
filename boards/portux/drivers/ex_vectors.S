@@ -1,4 +1,6 @@
-.section vectors
+#include "memory-map.h"
+
+.section .vectors, "ax"
 
 // the bounds of what needs to appear at 0x0
 .global vector_table
@@ -6,24 +8,21 @@
 
 // varibales to store the destination addresses in.
 .global reset_vector
-.global undef_instr_vecor
+.global undef_instr_vector
 .global software_interrupt_vector
 .global code_load_abort_vector
 .global data_load_abort_vector
 .global interrupt_vector
 .global fast_interrupt_vector
 
-// helper to initiallize the sp in a banked mode
-.global vectors_init
-// the sp to set it to
-.global sp_set
+// helpers for c code
+.global init_stacks
 // helper to return from exception
 .global return_from_vector
 
-
 vector_table:
 ldr PC, reset_vector
-ldr PC, undef_instr_vecor
+ldr PC, undef_instr_vector
 ldr PC, software_interrupt_vector
 ldr PC, code_load_abort_vector
 ldr PC, data_load_abort_vector
@@ -34,7 +33,7 @@ ldr PC, fast_interrupt_vector
 
 reset_vector:
 .word _start
-undef_instr_vecor:
+undef_instr_vector:
 .word _start
 software_interrupt_vector:
 .word _start
@@ -46,7 +45,48 @@ interrupt_vector:
 .word _start
 fast_interrupt_vector:
 .word _start
-.vector_table_end:
+vector_table_end:
 
-.return_from_vector:
+.section .text, "ax"
+init_stacks:
+MRS r0,CPSR
+BIC r0,r0,#0x1F
+ORR r0,r0, #MODE_FIQ
+//ORR r0,r0, 0x13
+MSR cpsr, r0
+ldr sp, =INIT_FIQ_STACK
+
+MRS r0,CPSR
+BIC r0,r0,#0x1F
+ORR r0,r0,#MODE_IRQ
+MSR cpsr, r0
+ldr sp, =INIT_IRQ_STACK
+
+MRS r0,CPSR
+BIC r0,r0,#0x1F
+ORR r0,r0,#MODE_ABT
+MSR cpsr, r0
+ldr sp, =INIT_ABT_STACK
+
+MRS r0,CPSR
+BIC r0,r0,#0x1F
+ORR r0,r0,#MODE_UND
+MSR cpsr, r0
+ldr sp, =INIT_UND_STACK
+
+MRS r0,CPSR
+BIC r0,r0,#0x1F
+ORR r0,r0,#MODE_SYS
+MSR cpsr, r0
+ldr sp, =INIT_SYS_STACK
+
+MRS r0,CPSR
+BIC r0,r0,#0x1F
+ORR r0,r0,#MODE_SVC
+MSR cpsr, r0
+
+bx lr
+
+return_from_vector:
 ldm sp, {pc}
+

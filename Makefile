@@ -20,9 +20,11 @@ AS = arm-none-eabi-as
 AS_FLAGS =
 AS_DEBUG_FLAGS =
 
+INCLUDE = . ./boards/$(platform)
+
 CC = arm-none-eabi-gcc
 CC_FLAGS = -Wall -O2 -c -Wextra -ffreestanding
-CC_FLAGS += -I. -I./boards/$(platform) -include default.h
+CC_FLAGS += $(addprefix -I,$(INCLUDE)) -include default.h
 CC_DEBUG_FLAGS = -g -DDEBUG
 
 LD = arm-none-eabi-ld
