@@ -3,11 +3,7 @@
 
 #include "default.h"
 
-void switch_vector_table();
-
-void set_svc_handler(void (*hand)());
-
-void set_undef_instr_vector(void (*hand)());
+extern void init_stacks();
 
 typedef struct {
 	u32 remap;

@@ -8,22 +8,15 @@
 #pragma GCC push_options
 #pragma GCC optimize ("O0")
 
-extern void init_stacks();
-
-void __attribute__((interrupt ("UNDEF"))) illegal_instr_hand() {
-	printf("Illegal instruction\r\n");
-}
-
 /* MAIN */
 void c_entry(void) {
 	/* init driver */
 	dbgu_init();
 	init_stacks();
-	set_undef_instr_vector(&illegal_instr_hand);
-	switch_vector_table();
-	asm(".word 0x775f0074" : : : "memory");
+	init_vector_handling();
 	/* run stuff */
 	print_banner();
+	asm(".word 0x775f0074" : : : "memory");
 	io_demo();
 
 }

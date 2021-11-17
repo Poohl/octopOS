@@ -3,6 +3,7 @@
 #define DEFAULT_H
 
 #include <stdint.h>
+#include <stddef.h>
 
 typedef uint8_t u8;
 typedef uint16_t u16;
@@ -17,5 +18,7 @@ typedef int64_t i64;
 typedef char byte;
 
 typedef unsigned int uint;
+
+typedef void (*void_void_func_ptr)();
 
 #endif
