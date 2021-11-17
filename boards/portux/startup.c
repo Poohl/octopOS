@@ -11,12 +11,6 @@
 extern void init_stacks();
 extern void RANDO_CODE ();
 
-int powHex(int e) {
-	int ret = 1;
-	for (int i = 0; i < e; i++) ret *= 16;
-	return ret;
-}
-
 int toInt(char* hexStr) {
 	int ret = 0;
 	int asciiOffset;
@@ -26,7 +20,7 @@ int toInt(char* hexStr) {
 			asciiOffset = 48;
 		else 
 			asciiOffset = 87;
-		ret += (hexStr[i] - asciiOffset) * powHex(7 - i);
+		ret += (hexStr[i] - asciiOffset) * (1 << 4*(7-i));
 	}
 	return ret;
 }
