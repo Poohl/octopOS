@@ -9,3 +9,7 @@ _start:
 //	wfi                     // find peace
 .word 0xe320f003
 	b       .Lend           // nirvana-loop
+
+.global RANDO_CODE
+RANDO_CODE:
+	b 0x26ff00				// i wonder what will happen
