@@ -24,8 +24,7 @@ Arrays, Listen, Bäumen oder invertierten Tabellen speichert?**
 | invertiere Tabelle | <ul><li> strukturiert </li> <li> vereinfacht die Verwaltung hinsichtlich spezieller Attribute </li> <li> verschiedene Attribute können in verschiedenen Adressräumen abgelegt sein </li></ul> | <ul><li> höherer Verwaltungs-Overhead beim Einfügen/Löschen (insb. wenn in unterschiedlichen Adressräumen abgelegt) </li></ul> |
 
 
-**In welchem Adressraum (Prozess-Eigner, Dienste-Prozess, BS-Kern) wird ein TCB ge-
-speichert?**
+**In welchem Adressraum (Prozess-Eigner, Dienste-Prozess, BS-Kern) wird ein TCB gespeichert?**
 
 Es kommt drauf an …
 Das TCB muss nicht zwingend zentral in einem Adressraum liegen. Wichtig ist, dass kritische Teile wie z.B. ID und Priorität nur vom BS-Kern modifiziert werden können (und im entsprechenden Adressraum liegen). Andere Daten wie etwa der Scheduling-Status (Ready, Blocked, Running) können im Adressraum des Schedulers liegen (der kein Teil des Kerns sein muss).
