@@ -19,6 +19,6 @@ void io_demo() {
 	} while (c != '$');
 
 	printf("end of demo loop.\n\r");
-	printf("And heres what happnes with unknown formats:\n\r %a %b %% %f\n\r", 1, 2, 3, 4);	
+	//printf("And heres what happnes with unknown formats:\n\r %a %b %% %f\n\r", 1, 2, 3, 4);	
 	printf("done. (press ^a then x to quit qemu)");
 }

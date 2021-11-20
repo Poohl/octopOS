@@ -5,6 +5,8 @@
 
 extern void init_stacks();
 
+void init_vector_handling();
+
 typedef struct {
 	u32 remap;
 	const u32 abort_status;
