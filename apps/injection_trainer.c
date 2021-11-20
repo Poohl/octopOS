@@ -51,6 +51,7 @@ static void help() {
 		"         -> 0x0fffff00 causes a data abort\r\n"
 		"   5.1.4 -> 0xe51ff004\r\n"
 		"         -> 0x0fffff00 causes a code abort\r\n"
+		"   5.1.5 -> 0xe320f003 wfi aka kill the cpu\r\n"
 		"",
 		&printf, &injection_trainer
 	);
@@ -107,7 +108,7 @@ void injection_trainer() {
 	int score = 0;
 	int p = 0;
 	while (1) {
-		printf("Welcome to the Injection trainer 1.0, enter for help, Current score %x\r\n", score);
+		printf("Welcome to the Injection trainer 1.0, $ for help, Current score %x\r\n", score);
 		// clear the injection buffer
 		for (uint i = 0; i < ARR_LEN(payload) - sizeof(default_instruction); ++i)
 			payload[i] = in_tr_nop;

@@ -20,9 +20,8 @@ void c_entry(void) {
 	init_stacks();
 	init_vector_handling();
 	
+	print_banner();
 	injection_trainer();
-
-	inject_code();
 
 	/*
 	asm(".word 0x775f0074" : : : "memory");
