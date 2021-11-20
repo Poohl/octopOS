@@ -17,12 +17,14 @@ all: _all
 
 # used software and default flags
 AS = arm-none-eabi-as
-AS_FLAGS =
+AS_FLAGS = $(addprefix -I,$(INCLUDE))
 AS_DEBUG_FLAGS =
 
+INCLUDE = . ./boards/$(platform)
+
 CC = arm-none-eabi-gcc
-CC_FLAGS = -Wall -O2 -c -Wextra -ffreestanding
-CC_FLAGS += -I. -I./boards/$(platform) -include default.h
+CC_FLAGS = -Wall -O2 -c -Wextra -ffreestanding -Wno-override-init
+CC_FLAGS += $(addprefix -I,$(INCLUDE)) -include default.h
 CC_DEBUG_FLAGS = -g -DDEBUG
 
 LD = arm-none-eabi-ld
@@ -122,7 +124,7 @@ run: $(prod)
 	$(QEMU) $(QEMU_FLAGS) -kernel $(prod)
 
 debugger:
-	gdb-multiarch $(if $(debug_load),,-s) $(prod) -ex "target remote $(debug_target)" -ex "layout split" $(if $(debug_load), --ex "load")
+	gdb-multiarch $(if $(debug_load),,-s) $(build_dir)/kernel.elf -ex "target remote $(debug_target)" -ex "layout split" $(if $(debug_load), --ex "load")
 
 wordcount:
 	cat $(S_src) $(c_src) $(headers) | wc

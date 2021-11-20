@@ -3,6 +3,7 @@
 #define DEFAULT_H
 
 #include <stdint.h>
+#include <stddef.h>
 
 typedef uint8_t u8;
 typedef uint16_t u16;
@@ -15,7 +16,14 @@ typedef int32_t i32;
 typedef int64_t i64;
 
 typedef char byte;
+typedef unsigned char ubyte;
+typedef signed char sbyte;
 
 typedef unsigned int uint;
+
+typedef void (*void_void_func_ptr)();
+
+#define ARR_LEN(ARR) \
+	(sizeof(ARR) / sizeof(ARR[0]))
 
 #endif
