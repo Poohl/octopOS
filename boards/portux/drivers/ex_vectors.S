@@ -90,3 +90,45 @@ bx lr
 return_from_vector:
 ldm sp, {pc}
 
+.global UNDEF_ex
+UNDEF_ex:
+push {r0-r12, lr}
+mov r0, #4
+mov r1, r14
+add r1, r1, #-4 
+ldr r2, [r1]
+bl  exception_handler
+// mov lr, r0
+ldm sp!, {r0-r12, pc}^
+
+.global D_ABORT_ex
+D_ABORT_ex:
+push {r0-r12, lr}
+mov r0, #1
+mov r1, r14
+add r1, r1, #-8
+ldr r2, [r1]
+bl  exception_handler
+// mov lr, r0
+ldm sp!, {r0-r12, pc}^
+
+.global C_ABORT_ex
+C_ABORT_ex:
+push {r0-r12, lr}
+mov r0, #2
+mov r1, r14
+add r1, r1, #-4 
+//ldr r2, [r1]
+bl  exception_handler
+// mov lr, r0
+ldm sp!, {r0-r12, pc}^
+
+.global SWI
+SWI:
+push {r0-r12, lr}
+mov r1, r14
+add r1, r1, #-4 
+ldr r2, [r1]
+bl  syscall_handler
+// mov lr, r0
+ldm sp!, {r0-r12, pc}^

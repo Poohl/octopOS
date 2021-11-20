@@ -28,10 +28,10 @@ __attribute__((weak)) sequence_io_status debug_read(uint len, byte* buff) {
 }
 
 static const char* exception_fmt[] = {
-	"Unknown Instruction at %p, extra data %p\r\n",
-	"Illegal data access from %p to %p\r\n",
+	"Unknown instruction at %p, instruction %p\r\n",
+	"Illegal data access from %p by %p\r\n",
 	"Illegal code access to %p, extra data %p\r\n",
-	"Illegal instruction at %p, extra data %p\r\n"
+	"Illegal instruction at %p, instruction %p\r\n"
 };
 
 #define exception_fmt_len (sizeof(exception_fmt)/sizeof(exception_fmt[0]))

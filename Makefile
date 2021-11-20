@@ -17,7 +17,7 @@ all: _all
 
 # used software and default flags
 AS = arm-none-eabi-as
-AS_FLAGS =
+AS_FLAGS = $(addprefix -I,$(INCLUDE))
 AS_DEBUG_FLAGS =
 
 INCLUDE = . ./boards/$(platform)

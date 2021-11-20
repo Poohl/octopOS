@@ -44,8 +44,13 @@ static void help() {
 		"5. Examples\r\n"
 		"  If You just wanna test it working, here's a few examples and what they should do:\r\n"
 		"5.1 Portux\r\n"
-		"    23232323 is an undefind instruction\r\n"
-		"    XXXXXXXX causes a syscall\r\n"
+		"   5.1.1 -> 0x23232323 is an undefind instruction\r\n"
+		"   5.1.2 -> 0xef000001 causes a syscall\r\n"
+		"   5.1.3 -> 0xe51f0000\r\n"
+		"         -> 0xe5900000\r\n"
+		"         -> 0x0fffff00 causes a data abort\r\n"
+		"   5.1.4 -> 0xe51ff004\r\n"
+		"         -> 0x0fffff00 causes a code abort\r\n"
 		"",
 		&printf, &injection_trainer
 	);

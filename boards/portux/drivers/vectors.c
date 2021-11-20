@@ -11,6 +11,10 @@ extern void (*code_load_abort_vector)();
 extern void (*data_load_abort_vector)();
 extern void (*interrupt_vector)();
 extern void (*fast_interrupt_vector)();
+extern void_void_func_ptr UNDEF_ex();
+extern void_void_func_ptr D_ABORT_ex();
+extern void_void_func_ptr C_ABORT_ex();
+extern void_void_func_ptr SWI();
 
 
 __attribute__((interrupt ("UNDEF")))
@@ -35,10 +39,10 @@ static void software_interrupt_hand() {
 
 void init_vector_handling() {
 	reset_vector = &software_interrupt_hand;
-	code_load_abort_vector = code_load_abort_hand;
-	data_load_abort_vector = data_load_abort_hand;
-	undef_instr_vector = illegal_instr_hand;
-	software_interrupt_vector = software_interrupt_hand;
+	code_load_abort_vector = C_ABORT_ex;
+	data_load_abort_vector = D_ABORT_ex;
+	undef_instr_vector = UNDEF_ex;
+	software_interrupt_vector = SWI;
 	volatile ui* user_friendly_interface = (ui*) (USER_INTERFACE);
 	user_friendly_interface->remap = 1;
 }
