@@ -2,6 +2,7 @@ ENTRY(_start)
 SECTIONS
 {
 	. = 0x200000;
+	.vectors : { *(.vectors) }
 	.init : { *(.init) }
 	.text : { *(.text) }
 	

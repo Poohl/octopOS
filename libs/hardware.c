@@ -1,6 +1,7 @@
 
 #include "hardware.h"
 #include "interfaces.h"
+#include "libs/printf.h"
 
 __attribute__((weak)) sequence_io_status debug_write(uint len, const byte* data) {
 	sequence_io_status out = {};
@@ -24,4 +25,22 @@ __attribute__((weak)) sequence_io_status debug_read(uint len, byte* buff) {
 	else
 		out.err = 0;
 	return out;
+}
+
+static const char* exception_fmt[] = {
+	"Unknown instruction at %p, instruction %p\r\n",
+	"Illegal data access from %p by %p\r\n",
+	"Illegal code access to %p, extra data %p\r\n",
+	"Illegal instruction at %p, instruction %p\r\n"
+};
+
+#define exception_fmt_len (sizeof(exception_fmt)/sizeof(exception_fmt[0]))
+
+__attribute__((weak)) void exception_handler(int type, void* instruction, void* data) {
+	type = (type >= exception_fmt_len ? exception_fmt_len - 1 : type);
+	printf(exception_fmt[type], instruction, data);
+}
+
+__attribute__((weak)) void syscall_handler(int syscall, void* source) {
+	printf("Syscall %x triggered at %p\r\n", syscall, source);
 }
