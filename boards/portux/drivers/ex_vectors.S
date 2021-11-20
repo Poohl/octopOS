@@ -76,13 +76,13 @@ ldr sp, =INIT_UND_STACK
 
 MRS r0,CPSR
 BIC r0,r0,#0x1F
-ORR r0,r0,#MODE_SYS
+ORR r0,r0,#MODE_SVC
 MSR cpsr, r0
-ldr sp, =INIT_SYS_STACK
+ldr sp, =INIT_SVC_STACK
 
 MRS r0,CPSR
 BIC r0,r0,#0x1F
-ORR r0,r0,#MODE_SVC
+ORR r0,r0,#MODE_SYS
 MSR cpsr, r0
 
 bx lr

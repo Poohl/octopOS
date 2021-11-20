@@ -69,7 +69,7 @@ default_instruction toInt(char* hexStr) {
 int inject_code() {
 	char buffer[sizeof(default_instruction)*2];
 	int instrcnt = 0;
-	int i;
+	int i = 0;
 
 	/* read input */
 	while (buffer[i] != '$') {

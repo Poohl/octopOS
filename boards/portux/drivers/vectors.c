@@ -38,6 +38,7 @@ void init_vector_handling() {
 	code_load_abort_vector = code_load_abort_hand;
 	data_load_abort_vector = data_load_abort_hand;
 	undef_instr_vector = illegal_instr_hand;
+	software_interrupt_vector = software_interrupt_hand;
 	volatile ui* user_friendly_interface = (ui*) (USER_INTERFACE);
 	user_friendly_interface->remap = 1;
 }
