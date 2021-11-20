@@ -124,7 +124,7 @@ run: $(prod)
 	$(QEMU) $(QEMU_FLAGS) -kernel $(prod)
 
 debugger:
-	gdb-multiarch $(if $(debug_load),,-s) $(prod) -ex "target remote $(debug_target)" -ex "layout split" $(if $(debug_load), --ex "load")
+	gdb-multiarch $(if $(debug_load),,-s) $(build_dir)/kernel.elf -ex "target remote $(debug_target)" -ex "layout split" $(if $(debug_load), --ex "load")
 
 wordcount:
 	cat $(S_src) $(c_src) $(headers) | wc
