@@ -62,7 +62,7 @@ default_instruction toInt(char* hexStr) {
 	default_instruction ret = 0;
 	int asciiOffset;
 
-	for (int i = 0; i < sizeof(default_instruction) * 2; i++) {
+	for (uint i = 0; i < sizeof(default_instruction) * 2; i++) {
 		if (hexStr[i] < 58) 
 			asciiOffset = 48;
 		else 
@@ -78,26 +78,27 @@ int inject_code() {
 	int i = 0;
 
 	/* read input */
-	while (buffer[i] != '$') {
+	do {
 		printf("\n\rinject @ %p -> 0x", &payload[instrcnt]);
 		for (i = 0; i < sizeof(default_instruction)*2; i++) {
-			buffer[i] = dbgu_get_byte();
+			buffer[i] = debug_get_char();
 
 			/* backspace function */
 			if (buffer[i] == 0x7f) {
 				printf("\n\rinject @ %p -> 0x", &payload[instrcnt]);
-				for (int j = 0; j < i-1; j++) dbgu_put_byte(buffer[j]);
+				for (int j = 0; j < i-1; j++) debug_put_char(buffer[j]);
 				i -= 2;
 				continue;
 			};
 
-			dbgu_put_byte(buffer[i]);
+			debug_put_char(buffer[i]);
 			if (buffer[i] == '$') break;
 		} 
 
-		if (buffer[i] != '$') payload[instrcnt] = toInt(buffer);
+		if (buffer[i] != '$')
+			payload[instrcnt] = toInt(buffer);
 		instrcnt++;
-	}
+	} while (buffer[i] != '$');
 	printf("\n\rhere goes nothing...\n\r");
 
 	return instrcnt;

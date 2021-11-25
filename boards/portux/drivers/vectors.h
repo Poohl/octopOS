@@ -14,4 +14,6 @@ typedef struct {
 	u32 master_prio;
 } ui;
 
+void set_interrupt_handler(u8 num, void_void_func_ptr handler, u8 prio, u8 mode);
+
 #endif

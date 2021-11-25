@@ -10,8 +10,6 @@
 #pragma GCC optimize ("O0")
 
 extern void init_stacks();
-extern void RANDO_CODE ();
-
 
 /* MAIN */
 void c_entry(void) {
@@ -23,8 +21,6 @@ void c_entry(void) {
 	print_banner();
 	injection_trainer();
 
-	/*
-	asm(".word 0x775f0074" : : : "memory");
 	/* run stuff 
 	print_banner();
 	asm(".word 0x775f0074" : : : "memory");

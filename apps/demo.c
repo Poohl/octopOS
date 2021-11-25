@@ -7,7 +7,7 @@ void io_demo() {
 	printf("printf demo mode -- PRESS ANY KEY\n\r");
 	printf("(press $ to quit)\n\r");
 	do {
-		int ret = debug_put_char('#');
+		debug_put_char('#');
 		c = debug_get_char();	
 		if (c <= 0) {
 			printf("Error %x reading that!\n\r", c);

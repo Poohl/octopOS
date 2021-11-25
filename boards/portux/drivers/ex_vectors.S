@@ -1,4 +1,5 @@
 #include "memory-map.h"
+#include "libs/hardware.h"
 
 .section .vectors, "ax"
 
@@ -26,7 +27,12 @@ ldr PC, undef_instr_vector
 ldr PC, software_interrupt_vector
 ldr PC, code_load_abort_vector
 ldr PC, data_load_abort_vector
-ldr PC, interrupt_vector
+//ldr PC, [AIC + offsetof(aic, current_target)] // gcc's legendary pipeline can't handle this
+ldr PC, [PC, #AIC+0x100-20-4]                   // so we assemble it a bit more manually
+//                ^ offset of current_target
+//                      ^ offset of this instruction from 0x0 after remap
+//                         ^ offset of PC from current instruction
+// effectively: PC + AIC + offsetof(aic, current_target) - PC
 .word 0x0
 ldr PC, fast_interrupt_vector
 .word 0x0
@@ -93,8 +99,8 @@ ldm sp, {pc}
 .global UNDEF_ex
 UNDEF_ex:
 push {r0-r12, lr}
-mov r0, #4
-mov r1, r14
+mov r0, #EXCEPTION_ILLEGAL_INST
+mov r1, lr
 add r1, r1, #-4 
 ldr r2, [r1]
 bl  exception_handler
@@ -104,8 +110,8 @@ ldm sp!, {r0-r12, pc}^
 .global D_ABORT_ex
 D_ABORT_ex:
 push {r0-r12, lr}
-mov r0, #1
-mov r1, r14
+mov r0, #EXCEPTION_ILLEGAL_DATA
+mov r1, lr
 add r1, r1, #-8
 ldr r2, [r1]
 bl  exception_handler
@@ -115,8 +121,8 @@ ldm sp!, {r0-r12, pc}^
 .global C_ABORT_ex
 C_ABORT_ex:
 push {r0-r12, lr}
-mov r0, #2
-mov r1, r14
+mov r0, #EXCEPTION_ILLEGAL_CODE
+mov r1, lr
 add r1, r1, #-4 
 //ldr r2, [r1]
 bl  exception_handler
@@ -126,7 +132,7 @@ ldm sp!, {r0-r12, pc}^
 .global SWI
 SWI:
 push {r0-r12, lr}
-mov r1, r14
+mov r1, lr
 add r1, r1, #-4 
 ldr r2, [r1]
 bl  syscall_handler

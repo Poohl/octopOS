@@ -7,4 +7,10 @@
 
 #define SYS_CTL_VTOR 0xE000ED08
 
+#ifndef __ASSEMBLER__
+
 void _start(void);
+
+typedef u16 default_instruction;
+
+#endif

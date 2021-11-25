@@ -4,16 +4,13 @@
 
 typedef void_void_func_ptr isr; 
 
-__attribute__((isr))
 static void dontCare() {
 }
 
-__attribute__((isr))
 static void _exception_hand() {
 	exception_handler(0, NULL, NULL);
 }
 
-__attribute__((isr))
 static void _svcall_hand() {
 	syscall_handler(0, NULL);
 }

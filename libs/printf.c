@@ -1,6 +1,5 @@
 #include <stdarg.h>
 #include "printf.h"
-#include "interfaces.h"
 #include "hardware.h"
 
 static void add_to_sequence_io_status(sequence_io_status* dest, const sequence_io_status* src) {
@@ -8,10 +7,11 @@ static void add_to_sequence_io_status(sequence_io_status* dest, const sequence_i
 	dest->err |= src->err;
 }
 
-sequence_io_status printf(char* format, ...) {
+sequence_io_status printf(const char* format, ...) {
 	va_list args;
 	va_start(args, format);
-	char *cursor = format, c, *str, buff[10];
+	const char *cursor = format,  *str;
+	char c, buff[10];
 	const char* lookuptable = "0123456789abcdef";
 	int len, pos;
 	sequence_io_status out = {
