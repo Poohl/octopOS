@@ -27,10 +27,15 @@ void c_entry(void) {
 		"MSR cpsr, r0\n"
 		: : : "r0"); // #NOTSORRY for windows plebs
 
-	volatile aic* _aic = (aic*) AIC;
+	volatile aic* inter_tset = (aic*) AIC;
 
-	_aic->enable = 0b10000;
-	_aic->set = 0b10000;
+	inter_tset->enable = 2;
+	//inter_tset->set = 0b10000;
+
+	volatile if_hw_mem_dbgu* dbgu_test = (if_hw_mem_dbgu*) DBGU;
+
+	dbgu_test->interrupt_disable = 0xFFFFFFFF;
+	dbgu_test->interrupt_enable = 1;
 
 	print_banner();
 	injection_trainer();

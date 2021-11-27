@@ -27,8 +27,8 @@ ldr PC, undef_instr_vector
 ldr PC, software_interrupt_vector
 ldr PC, code_load_abort_vector
 ldr PC, data_load_abort_vector
+.word 0x6675636b // buffer to fill 4 bytes
 //ldr PC, [AIC + offsetof(aic, current_target)] // gcc's legendary pipeline can't handle this
-.word 0x6675636b
 ldr PC, [PC, #AIC+0x100-24-8]                   // so we assemble it a bit more manually
 //                ^ offset of current_target
 //                      ^ offset of this instruction from 0x0 after remap

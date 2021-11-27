@@ -5,6 +5,7 @@
 #include "libs/hardware.h"
 #include "aic.h"
 #include "libs/printf.h"
+#include "drivers/dbgu.h"
 
 extern void (*reset_vector)();
 extern void (*undef_instr_vector)();
@@ -23,10 +24,12 @@ volatile aic* _aic;
 
 __attribute__((interrupt ("IRQ")))
 static void undef_interrupt_hand() {
-	printf("Interrupt\r\n");
+	printf("Interrupt %p\r\n", _aic);
 	exception_handler(EXCEPTION_UNEXPECTED_ISR, NULL, ((aic*) AIC)->status);
+	debug_put_char(debug_get_char());
 	_aic->signal_end = 1;
 	_aic->clear = 1 << _aic->status;
+	enable_interrupts
 }
 
 void init_vector_handling() {
