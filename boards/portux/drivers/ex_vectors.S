@@ -28,14 +28,14 @@ ldr PC, software_interrupt_vector
 ldr PC, code_load_abort_vector
 ldr PC, data_load_abort_vector
 //ldr PC, [AIC + offsetof(aic, current_target)] // gcc's legendary pipeline can't handle this
-ldr PC, [PC, #AIC+0x100-20-4]                   // so we assemble it a bit more manually
+.word 0x6675636b
+ldr PC, [PC, #AIC+0x100-24-8]                   // so we assemble it a bit more manually
 //                ^ offset of current_target
 //                      ^ offset of this instruction from 0x0 after remap
 //                         ^ offset of PC from current instruction
 // effectively: PC + AIC + offsetof(aic, current_target) - PC
-.word 0x0
+
 ldr PC, fast_interrupt_vector
-.word 0x0
 
 reset_vector:
 .word _start

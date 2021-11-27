@@ -18,14 +18,17 @@ extern void C_ABORT_ex();
 extern void SWI();
 extern void UNDEF_ISR();
 
-__attribute__((interrupt ("ISR")))
+volatile aic* _aic;
+
+__attribute__((interrupt ("IRQ")))
 static void undef_interrupt_hand() {
-	exception_handler(EXCEPTION_UNEXPECTED_ISR, NULL, ((aic*) AIC)->status);
+	printf("Interrupt");
+	//exception_handler(EXCEPTION_UNEXPECTED_ISR, NULL, ((aic*) AIC)->status);
+	_aic->signal_end = 1;
 }
 
-aic* _aic = (aic*) AIC;
-
 void init_vector_handling() {
+	_aic = (aic*) AIC;
 	reset_vector = SWI;
 	code_load_abort_vector = C_ABORT_ex;
 	data_load_abort_vector = D_ABORT_ex;
@@ -34,10 +37,14 @@ void init_vector_handling() {
 	volatile ui* user_friendly_interface = (ui*) (USER_INTERFACE);
 	user_friendly_interface->remap = 1;
 	_aic->spurious_target = &undef_interrupt_hand;
-	for (int i = 0; i < 32; i++) {
+	
+	_aic->isr_target[3] = &undef_interrupt_hand;
+	_aic->isr_mode[3] = 0;
+
+	/*for (int i = 0; i < 32; i++) {
 		_aic->isr_target[i] = &undef_interrupt_hand;
 		_aic->isr_mode[i] = 0;
-	}
+	}*/
 }
 
 void set_interrupt_handler(u8 num, void_void_func_ptr handler, u8 prio, u8 mode) {
