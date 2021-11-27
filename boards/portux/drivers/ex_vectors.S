@@ -34,7 +34,7 @@ ldr PC, [PC, #AIC+0x100-24-8]                   // so we assemble it a bit more 
 //                      ^ offset of this instruction from 0x0 after remap
 //                         ^ offset of PC from current instruction
 // effectively: PC + AIC + offsetof(aic, current_target) - PC
-
+.word 0x0
 ldr PC, fast_interrupt_vector
 
 reset_vector:

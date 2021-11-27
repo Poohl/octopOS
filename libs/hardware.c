@@ -32,15 +32,15 @@ static const char* exception_fmt[] = {
 	"Undefined exception at %p, additional info: %p\r\n",
 	"Illegal data access from %p by %p\r\n",
 	"Illegal code access to %p, extra data %p\r\n",
-	"Illegal instruction at %p, instruction %p\r\n"
-	"During %p: Unhandeled interrupt %p\r\n"
+	"Illegal instruction at %p, instruction %p\r\n",
+	"During %p: Unhandeled interrupt %p\r\n",
 	"Unknown exception at %p, additional info: %p\r\n"
 };
 
 #define exception_fmt_len (sizeof(exception_fmt)/sizeof(exception_fmt[0]))
 
 __attribute__((weak)) void exception_handler(int type, void* instruction, void* data) {
-	type = ( (uint) type >= exception_fmt_len ? (int) exception_fmt_len - 1 : type);
+	
 	printf(exception_fmt[type], instruction, data);
 }
 

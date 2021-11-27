@@ -29,8 +29,8 @@ void c_entry(void) {
 
 	volatile aic* _aic = (aic*) AIC;
 
-	_aic->enable = 0b100;
-	_aic->set = 0b100;
+	_aic->enable = 0b10000;
+	_aic->set = 0b10000;
 
 	print_banner();
 	injection_trainer();
