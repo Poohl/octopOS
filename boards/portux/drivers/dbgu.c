@@ -4,6 +4,7 @@
 #include "default.h"
 #include "memory-map.h"
 #include "libs/hardware.h"
+#include "libs/loop_queue.h"
 
 #define CONTROL_RESET_RX (1 << 2)
 #define CONTROL_ENABLE_RX (1 << 4)
@@ -27,13 +28,23 @@
 
 static volatile if_hw_mem_dbgu* dbgu;
 
+static byte_loop_queue send_buff;
+static volatile byte _send_buff[256];
+static byte_loop_queue recv_buff;
+static volatile byte _recv_buff[256];
+
 int dbgu_init() {
 	dbgu = (if_hw_mem_dbgu*) DBGU;
 	dbgu->control = CONTROL_ENABLE_RX | CONTROL_RESET_STATUS_BITS;
+	dbgu->interrupt_enable = STATUS_RX_READY;
+	byte_loop_queue _lovely_c_spec = {
+		256,0,0,0
+	};
+	send_buff = recv_buff = _lovely_c_spec;
 	return 0;
 }
 
-int dbgu_put_byte(byte c) {
+int dbgu_put_byte_blocking(byte c) {
 	u32 s = 0;
 	while (!(s = (dbgu->status & (STATUS_TX_EMPTY | STATUS_TX_READY | STATUS_ERR_OVERRUN | STATUS_ERR_FRAME | STATUS_ERR_PARITY))));
 	if (s & (STATUS_ERR_OVERRUN | STATUS_ERR_FRAME | STATUS_ERR_PARITY)) {
@@ -45,10 +56,10 @@ int dbgu_put_byte(byte c) {
 }
 
 int debug_put_char(char c) {
-	return dbgu_put_byte(c);
+	return dbgu_put_byte_blocking(c);
 }
 
-int dbgu_get_byte() {
+int dbgu_get_byte_blocking() {
 	u32 s = 0;
 	while (!(s = (dbgu->status & (STATUS_RX_READY | STATUS_ERR_OVERRUN | STATUS_ERR_FRAME | STATUS_ERR_PARITY))));
 	if (s & (STATUS_ERR_OVERRUN | STATUS_ERR_FRAME | STATUS_ERR_PARITY)) {
@@ -59,5 +70,45 @@ int dbgu_get_byte() {
 }
 
 int debug_get_char() {
-	return dbgu_get_byte();
+	return dbgu_get_byte_blocking();
+}
+
+void dbgu_interupt_callback() {
+	u32 status = dbgu->status;
+	if (status & STATUS_RX_READY) {
+		blq_push(&recv_buff, dbgu->rx);
+	}
+	if (status & STATUS_TX_READY) {
+		int out = blq_pop(&send_buff);
+		if (out >= 0) {
+			dbgu->tx = out;
+		} else {
+			dbgu->interrupt_disable = STATUS_TX_READY;
+		}
+	}
+}
+
+void dbgu_write_async(uint len, const byte* data) {
+	blq_push_multi(&send_buff, data, len);
+	dbgu->interrupt_enable = STATUS_TX_READY;
+	dbgu_interupt_callback();
+}
+
+uint dbgu_read_async(uint len, byte* dest) {
+	return blq_pop_multi(&recv_buff, dest, len);
+}
+
+uint dbgu_async_read_flush() {
+	uint out = recv_buff.c_size;
+	byte_loop_queue _lovely_c_spec = {
+		256,0,0,0
+	};
+	recv_buff = _lovely_c_spec;
+	return out;
+}
+
+sequence_io_status dbgu_async_write_flush() {
+	while (dbgu->interrupt_mask & STATUS_TX_READY);
+	sequence_io_status out = {0,0};
+	return out;
 }

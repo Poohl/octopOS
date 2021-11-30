@@ -47,3 +47,7 @@ __attribute__((weak)) void exception_handler(int type, void* instruction, void* 
 __attribute__((weak)) void syscall_handler(int syscall, void* source) {
 	printf("Syscall %x triggered at %p\r\n", syscall, source);
 }
+
+__attribute__((weak)) void timer_handler() {
+	debug_write(3, "!\r\n");
+}

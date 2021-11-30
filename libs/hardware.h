@@ -26,6 +26,8 @@ int debug_get_char();
 sequence_io_status debug_write(uint len, const byte* data);
 sequence_io_status debug_read(uint len, byte* buff);
 
+int set_timer_interval(uint period);
+
 #endif
 
 /**
@@ -42,6 +44,7 @@ sequence_io_status debug_read(uint len, byte* buff);
 
 void exception_handler(int type, void* instruction, void* data);
 void syscall_handler(int syscall, void* source);
+void timer_handler();
 
 #endif
 

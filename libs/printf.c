@@ -1,4 +1,5 @@
 #include <stdarg.h>
+#include "default.h"
 #include "printf.h"
 #include "hardware.h"
 

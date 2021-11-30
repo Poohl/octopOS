@@ -1,5 +1,6 @@
 #include "drivers/dbgu.h"
 #include "drivers/vectors.h"
+#include "drivers/system_timer.h"
 #include "fluff/fluff.h"
 #include "apps/demo.h"
 #include "libs/printf.h"
@@ -14,6 +15,13 @@
 
 extern void init_stacks();
 
+__attribute__((interrupt ("IRQ")))
+void system_interrupt_hand() {
+	dbgu_interupt_callback();
+	timer_interrupt_callback();
+	enable_interrupts();
+}
+
 /* MAIN */
 void c_entry(void) {
 	/* init driver */
@@ -21,11 +29,10 @@ void c_entry(void) {
 	init_stacks();
 	init_vector_handling();
 
-	asm volatile (
-		"MRS r0,CPSR\n"
-		"BIC r0,r0,#0b11000000\n"
-		"MSR cpsr, r0\n"
-		: : : "r0"); // #NOTSORRY for windows plebs
+	enable_interrupts();
+
+	set_interrupt_handler(1, &system_interrupt_hand, 0, 0);
+	set_timer_interval(1000);
 
 	volatile aic* inter_tset = (aic*) AIC;
 

@@ -24,11 +24,15 @@ typedef struct {
 	byte pdc[0x124-0x100+sizeof(u32)];
 } if_hw_mem_dbgu;
 
-int dbgu_put_byte(byte c);
 int dbgu_init();
-int dbgu_get_byte();
+int dbgu_put_byte_blocking(byte c);
+int dbgu_get_byte_blocking();
 
-sequence_io_status dbgu_write(uint len, const byte* data);
-sequence_io_status dbgu_read(uint len, byte* buff);
+void dbgu_interupt_callback();
+
+void dbgu_write_async(uint len, const byte* data);
+uint dbgu_read_async(uint len, byte* dest);
+sequence_io_status dbgu_async_write_flush();
+uint dbgu_async_read_flush();
 
 #endif

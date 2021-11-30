@@ -28,10 +28,12 @@
 
 #define AIC 0xFFFFF000
 
-#define enable_interrupts asm volatile ( \
+#define SYSTEM_TIMER 0xFFFFFD00
+
+#define enable_interrupts() asm volatile ( \
 		"MRS r0,CPSR\n" \
 		"BIC r0,r0,#0b11000000\n" \
 		"MSR cpsr, r0\n" \
-		: : : "r0");
+		: : : "r0")
 
 #endif
