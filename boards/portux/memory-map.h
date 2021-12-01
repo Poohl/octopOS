@@ -2,7 +2,11 @@
 #ifndef MEMORY_MAP_H
 #define MEMORY_MAP_H
 
+#ifndef __ASSEMBLER__
+
 #include "drivers/aic.h"
+
+#endif
 
 #define MODE_USR 0b10000
 #define MODE_FIQ 0b10001
