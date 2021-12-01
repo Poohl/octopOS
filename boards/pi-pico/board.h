@@ -4,6 +4,15 @@
 
 #define INIT_MAIN_STACK 0x20001000
 #define INIT_PROCESS_STACK 0x20002000
+#define SYSTICK 0xE000E010
+
+#define CONTROL_UNPRIV 1
+#define CONTROL_PROC_STACK 2
+
+#define ISR_RETURN_HANDLER 0xFFFFFFF1
+#define ISR_RETURN_THREAD_MAIN 0xFFFFFFF9
+#define ISR_RETURN_THREAD_PROC 0xFFFFFFFD
+
 
 #define SYS_CTL_VTOR 0xE000ED08
 
@@ -12,5 +21,10 @@
 void _start(void);
 
 typedef u16 default_instruction;
+
+#define TO_DEFAULT_FUNC_PTR(PTR) \
+	(((u32) PTR) | 1)
+
+#else
 
 #endif

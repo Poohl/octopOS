@@ -2,7 +2,8 @@
 #ifndef UART_H
 #define UART_H
 
-#include "interfaces.h"
+#include "default.h"
+#include "libs/hardware.h"
 
 int uart_init ( void );
 void uart_send ( unsigned int x );

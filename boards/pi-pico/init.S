@@ -61,7 +61,7 @@
 .word	0xa0002022
 .word	0x10000100
 .word	0xe000ed08
-// tis explains the "bad code, but saves instructions" commeents. The had 12 byte left over
+// tis explains the "bad code, but saves instructions" commeents. They had 12 byte left over
 .word	0x00000000
 .word	0x00000000
 .word	0x00000000

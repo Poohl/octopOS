@@ -8,7 +8,17 @@ static void dontCare() {
 }
 
 static void _exception_hand() {
-	exception_handler(0, NULL, NULL);
+	u32 _lr;
+	asm ("mov %0, lr" : "=r" (_lr) : :);
+	u32* exception_sp;
+	if (_lr != ISR_RETURN_THREAD_PROC) {
+		asm ("mrs %0, msp" : "=r" (exception_sp) : :);
+	} else {
+		asm ("mrs %0, psp" : "=r" (exception_sp) : :);
+	}
+	u32 exception_pc = exception_sp[8];
+	exception_sp[8] += 2;
+	exception_handler(0, exception_pc, *((default_instruction*) (exception_pc)));
 }
 
 static void _svcall_hand() {
@@ -23,6 +33,6 @@ isr vectors[] __attribute__((section(".vectors"))) = {
 	[3] = &_exception_hand,
 	[11] = &_svcall_hand, // hard syscall
 	[14] = &_svcall_hand, // soft syscall
-	// [15] = &_systick_hand,
+	[15] = &timer_handler,
 	// [16 ... 16+32] = &_interrupt_hand
 };
