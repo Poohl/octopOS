@@ -2,6 +2,7 @@
 #ifndef MEMORY_MAP_H
 #define MEMORY_MAP_H
 
+#include "drivers/aic.h"
 
 #define MODE_USR 0b10000
 #define MODE_FIQ 0b10001
@@ -30,10 +31,12 @@
 
 #define SYSTEM_TIMER 0xFFFFFD00
 
-#define enable_interrupts() asm volatile ( \
+#define enable_interrupts() \
+	((aic*) (AIC))->signal_end = 1; \
+	asm volatile ( \
 		"MRS r0,CPSR\n" \
 		"BIC r0,r0,#0b11000000\n" \
 		"MSR cpsr, r0\n" \
-		: : : "r0")
+		: : : "r0", "memory")
 
 #endif

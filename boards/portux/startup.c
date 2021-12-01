@@ -29,7 +29,14 @@ void c_entry(void) {
 	init_stacks();
 	init_vector_handling();
 
+	u32 buff;
+	asm("mrs %0, cpsr" :  "=r" (buff) : : );
+	printf("No Interrupts:\r\n%x\r\n", buff);
+
 	enable_interrupts();
+
+	asm("mrs %0, cpsr" :  "=r" (buff) : : );
+	printf("Yes Interrupts\r\n%x\r\n", buff);
 
 	set_interrupt_handler(1, &system_interrupt_hand, 0, 0);
 	set_timer_interval(1000);
