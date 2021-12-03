@@ -4,14 +4,17 @@
  * Memory Map
  */
 
-#define SRAM_BASE 0x10000000
-#define VECTORS_BASE 0x10000100
+#define SRAM_BASE               0x10000000
+#define VECTORS_BASE            0x10000100
 
-#define INIT_MAIN_STACK 0x20001000
-#define INIT_PROCESS_STACK 0x20002000
-#define SYSTICK 0xE000E010
+#define INIT_MAIN_STACK         0x20001000
+#define INIT_PROCESS_STACK      0x20002000
+#define SYSTICK                 0xE000E010
 
-#define SYS_CTL_VTOR 0xE000ED08
+#define NVIC                    0xE000E100
+#define SYS_CTL_VTOR            0xE000ED08
+
+
 
 #define ISR_RETURN_HANDLER 0xFFFFFFF1
 #define ISR_RETURN_THREAD_MAIN 0xFFFFFFF9
