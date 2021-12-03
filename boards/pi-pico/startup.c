@@ -7,6 +7,7 @@
 #include "fluff/fluff.h"
 #include "apps/injection_trainer.h"
 #include "libs/hardware.h"
+#include "vectors.h"
 
 extern void init_stacks();
 
@@ -21,6 +22,11 @@ void _start(void) {
 	uart_init();
 
 	init_stacks();
+	init_vectors();
+
+	uart_write_async(27, "This is same async stuff\r\n");
+	uart_async_write_flush();
+
 
 	set_timer_interval(1000000);
 

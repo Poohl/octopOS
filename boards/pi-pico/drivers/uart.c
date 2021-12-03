@@ -2,6 +2,7 @@
 #include "libs/hardware.h"
 #include "libs/loop_queue.h"
 #include "board.h"
+#include "libs/printf.h"
 
 void PUT32 ( unsigned int dest, unsigned int val) {
 	*((volatile u32*) (dest)) = ((u32) (val));
@@ -129,9 +130,7 @@ typedef struct {
 static volatile uart* uart0 = (uart*) UART0_BASE;
 
 static byte_loop_queue send_buff;
-static volatile byte _send_buff[256];
 static byte_loop_queue recv_buff;
-static volatile byte _recv_buff[256];
 
 #define UART0_BASE_UARTDR_RW        (UART0_BASE+0x000+0x0000)
 #define UART0_BASE_UARTFR_RW        (UART0_BASE+0x018+0x0000)
@@ -144,12 +143,21 @@ static volatile byte _recv_buff[256];
 #define STK_RVR 0xE000E014
 #define STK_CVR 0xE000E018
 
+// please pay close attention to how this is swapped from the interrupts
+// also why exaclty do we need this register, can't we just use isr_all ?
 #define STATUS_RX_EMPTY (1 << 4)
 #define STATUS_TX_FULL (1 << 5)
 
+// the documentation is the most unreadable shit. And even better, the official defs are also a mess.
 
-#define ISR_TX (1 << 5)
-#define ISR_RX (1 << 4)
+#define ISR_OVERRUN_ERROR (1 << 10)
+#define ISR_BREAK_ERROR (1 << 9)
+#define ISR_PARITY_ERROR (1 << 8)
+#define ISR_FRAME_ERROR (1 << 7)
+#define ISR_RX_DROPPED (1 << 6)
+#define ISR_TX_EMPTY (1 << 5)
+#define ISR_RX_FULL (1 << 4)
+#define ISR_MODEM (0xF)
 
 int uart_recv () {
 	while(uart0->status & STATUS_RX_EMPTY);
@@ -164,16 +172,17 @@ int uart_send ( unsigned int x ) {
 
 void uart0_hand() {
 	u32 status = uart0->status;
-	uart0->isr_clear = 0xFFFFFFFF;
-
+	//printf(">u0 %x %x\r\n", uart0->isr_all_status, uart0->isr_masked_status);
+	
 	if (!(status & STATUS_TX_FULL)) {
 		uart0->data = blq_pop(&send_buff);
 		if (send_buff.c_size <= 0)
-			*hw_clear_alias(&uart0->isr_mask) = ISR_TX;
+			*hw_clear_alias(&uart0->isr_mask) = ISR_TX_EMPTY;
 	}
 	if (!(status & STATUS_RX_EMPTY)) {
 		blq_push(&recv_buff, (byte) uart0->data);
 	}
+	//printf("u0> %x %x\r\n", uart0->isr_all_status, uart0->isr_masked_status);
 }
 
 sequence_io_status uart_write(uint len, const byte* data) {
@@ -257,8 +266,20 @@ int uart_init ( void )
 	PUT32(IO_BANK0_GPIO0_CTRL_RW,2);  //UART
 	PUT32(IO_BANK0_GPIO1_CTRL_RW,2);  //UART
 
-	hw_clear_alias(&uart0->isr_mask) = ISR_RX;
-
+//	*hw_clear_alias(&uart0->isr_mask) = ISR_RX;
+	//uart0->isr_clear = 0xFFFFFFFF;
+	recv_buff.buf_size = 256;
+	recv_buff.c_size = 0;
+	recv_buff.read = 0;
+	recv_buff.write = 0;
+	send_buff.buf_size = 256;
+	send_buff.c_size = 0;
+	send_buff.read = 0;
+	send_buff.write = 0;
+	
+	*hw_clear_alias(&uart0->isr_mask) = 0xFFFFFFFF;
+	*hw_set_alias(&uart0->isr_mask) = ISR_RX_FULL | ISR_RX_DROPPED | ISR_OVERRUN_ERROR | ISR_PARITY_ERROR | ISR_BREAK_ERROR | ISR_FRAME_ERROR;
+	//uart0->isr_mask = 
 	return(0);
 }
 
@@ -267,4 +288,36 @@ int debug_put_char(char c) {
 }
 int debug_get_char() {
 	return uart_recv();
+}
+
+void uart_write_async(uint len, const byte* data) {
+	blq_push_multi(&send_buff, data, len);
+	/* 
+	 * Yes there'a a race condition here:
+	 * If the handler checks the queue, finds it empty
+	 * we push & enable interrupts again
+	 * then the handler disables them again.
+	 * but currently the handler cannot be interrupted.
+	 */
+	*hw_set_alias(&uart0->isr_mask) = ISR_TX_EMPTY;
+}
+
+uint uart_read_async(uint len, byte* dest) {
+	return blq_pop_multi(&recv_buff, dest, len);
+}
+
+sequence_io_status uart_async_write_flush() {
+	while (send_buff.c_size > 0)
+		asm volatile ("" : : : );
+	sequence_io_status out = {0,0};
+	return out;
+}
+
+uint uart_async_read_flush() {
+	uint out = recv_buff.c_size;
+	recv_buff.buf_size = 256;
+	recv_buff.c_size = 0;
+	recv_buff.read = 0;
+	recv_buff.write = 0;
+	return out;
 }

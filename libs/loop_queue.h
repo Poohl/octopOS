@@ -9,7 +9,7 @@ typedef struct {
 	uint c_size;
 	uint write;
 	uint read;
-	byte buffer[];
+	byte buffer[256];
 } byte_loop_queue;
 
 uint blq_get_space(byte_loop_queue* self);

@@ -40,7 +40,6 @@ static const char* exception_fmt[] = {
 #define exception_fmt_len (sizeof(exception_fmt)/sizeof(exception_fmt[0]))
 
 __attribute__((weak)) void exception_handler(int type, void* instruction, void* data) {
-	
 	printf(exception_fmt[type], instruction, data);
 }
 

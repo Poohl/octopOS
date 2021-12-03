@@ -51,6 +51,9 @@ void c_entry(void) {
 	dbgu_test->interrupt_disable = 0xFFFFFFFF;
 	dbgu_test->interrupt_enable = 1;
 
+	dbgu_write_async(17, "async writing!\r\n");
+	dbgu_async_write_flush();
+
 	print_banner();
 	injection_trainer();
 

@@ -59,3 +59,10 @@ isr vectors[] __attribute__((section(".vectors"))) = {
 	[16 ... 16+32] = &_unexpected_isr_hand,
 	[16 + 20] = &uart0_hand
 };
+
+static volatile nvic* _nvic = (nvic*) NVIC;
+
+void init_vectors() {
+	_nvic->enable = (1 << 20);
+	asm volatile("cpsie i" : : : );
+}
