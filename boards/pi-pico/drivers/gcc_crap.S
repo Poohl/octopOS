@@ -10,12 +10,6 @@
 
 .global init_stacks
 init_stacks:
-	mrs r0, control
-	mov r1, #CONTROL_PROC_STACK
-	ldr r2, =#INIT_PROCESS_STACK
-	ORR r0, r1
-	msr control, r0
-	mov sp, r2
-	bic r0, r1
-	msr control, r0
+	ldr r0, =#INIT_PROCESS_STACK
+	msr psp, r0
 	bx lr

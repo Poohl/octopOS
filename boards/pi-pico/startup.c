@@ -22,10 +22,11 @@ void _start(void) {
 
 	init_stacks();
 
-	set_timer_interval(1000);
+	set_timer_interval(1000000);
 
 	print_banner();
 	injection_trainer();
+
 
 }
 

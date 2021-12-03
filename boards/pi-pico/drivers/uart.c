@@ -1,5 +1,7 @@
 #include "default.h"
 #include "libs/hardware.h"
+#include "libs/loop_queue.h"
+#include "board.h"
 
 void PUT32 ( unsigned int dest, unsigned int val) {
 	*((volatile u32*) (dest)) = ((u32) (val));
@@ -102,6 +104,35 @@ unsigned int GET32 ( unsigned int dest) {
 
 #define UART0_BASE                  0x40034000
 
+typedef struct {
+	u32 data;
+	u32 error;
+	u32 _reserved1[4];
+	u32 status;
+	u32 _reserved2;
+	u32 low_power_counter;
+	u32 int_baudrate_divisor;
+	u32 frac_baudrate_divisor;
+	u32 mode;
+	u32 control;
+	u32 fifo_isr_level;
+	u32 isr_mask;
+	u32 isr_all_status;
+	u32 isr_masked_status;
+	u32 isr_clear;
+	u32 dma_control;
+	u32 _reserved3[(0xfe0 - 0x48) / 4 - 1];
+	u32 preiphid[4];
+	u32 cellid[4];
+} uart;
+
+static volatile uart* uart0 = (uart*) UART0_BASE;
+
+static byte_loop_queue send_buff;
+static volatile byte _send_buff[256];
+static byte_loop_queue recv_buff;
+static volatile byte _recv_buff[256];
+
 #define UART0_BASE_UARTDR_RW        (UART0_BASE+0x000+0x0000)
 #define UART0_BASE_UARTFR_RW        (UART0_BASE+0x018+0x0000)
 #define UART0_BASE_UARTIBRD_RW      (UART0_BASE+0x024+0x0000)
@@ -113,25 +144,37 @@ unsigned int GET32 ( unsigned int dest) {
 #define STK_RVR 0xE000E014
 #define STK_CVR 0xE000E018
 
-int uart_recv ( void )
-{
-	while(1)
-	{
-		if((GET32(UART0_BASE_UARTFR_RW)&(1<<4))==0) break;
-	}
-	return(GET32(UART0_BASE_UARTDR_RW));
+#define STATUS_RX_EMPTY (1 << 4)
+#define STATUS_TX_FULL (1 << 5)
+
+
+#define ISR_TX (1 << 5)
+#define ISR_RX (1 << 4)
+
+int uart_recv () {
+	while(uart0->status & STATUS_RX_EMPTY);
+	return uart0->data;
 }
 
-int uart_send ( unsigned int x )
-{
-	while(1)
-	{
-		if((GET32(UART0_BASE_UARTFR_RW)&(1<<5))==0) break;
-	}
-	PUT32(UART0_BASE_UARTDR_RW,x);
+int uart_send ( unsigned int x ) {
+	while(uart0->status & STATUS_TX_FULL);
+	uart0->data = x;
 	return 0;
 }
 
+void uart0_hand() {
+	u32 status = uart0->status;
+	uart0->isr_clear = 0xFFFFFFFF;
+
+	if (!(status & STATUS_TX_FULL)) {
+		uart0->data = blq_pop(&send_buff);
+		if (send_buff.c_size <= 0)
+			*hw_clear_alias(&uart0->isr_mask) = ISR_TX;
+	}
+	if (!(status & STATUS_RX_EMPTY)) {
+		blq_push(&recv_buff, (byte) uart0->data);
+	}
+}
 
 sequence_io_status uart_write(uint len, const byte* data) {
 	sequence_io_status out = {};
@@ -213,6 +256,8 @@ int uart_init ( void )
 
 	PUT32(IO_BANK0_GPIO0_CTRL_RW,2);  //UART
 	PUT32(IO_BANK0_GPIO1_CTRL_RW,2);  //UART
+
+	hw_clear_alias(&uart0->isr_mask) = ISR_RX;
 
 	return(0);
 }

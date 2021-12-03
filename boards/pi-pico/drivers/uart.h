@@ -11,4 +11,6 @@ unsigned int uart_recv ( void );
 sequence_io_status uart_read(uint len, byte* buff);
 sequence_io_status uart_write(uint len, const byte* data);
 
+void uart0_hand();
+
 #endif
