@@ -34,5 +34,6 @@ void dbgu_write_async(uint len, const byte* data);
 uint dbgu_read_async(uint len, byte* dest);
 sequence_io_status dbgu_async_write_flush();
 uint dbgu_async_read_flush();
+byte get_recvbuff_head();
 
 #endif
