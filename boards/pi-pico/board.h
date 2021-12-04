@@ -1,4 +1,12 @@
 
+#ifndef PI_PICO_BOARD_H
+#ifdef BOARD_H
+#error "You already included" BOARD_H "'s board define, cannot include multiple"
+#endif
+#define PI_PICO_BOARD_H
+#define BOARD_H "armv6-m pi-pico"
+
+#include "default.h"
 
 /*
  * Memory Map
@@ -53,5 +61,7 @@ typedef u16 default_instruction;
 	(((u32) PTR) | 1)
 
 #else
+
+#endif
 
 #endif

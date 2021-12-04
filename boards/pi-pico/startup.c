@@ -9,9 +9,8 @@
 #include "libs/hardware.h"
 #include "vectors.h"
 
-extern void init_stacks();
-
 // needed to prevent gcc from optimizing c_entry out.
+
 #pragma GCC push_options
 #pragma GCC optimize ("O0")
 

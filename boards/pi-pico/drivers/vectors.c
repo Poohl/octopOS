@@ -62,6 +62,11 @@ isr vectors[] __attribute__((section(".vectors"))) = {
 
 static volatile nvic* _nvic = (nvic*) NVIC;
 
+void init_stacks() {
+	u32 value = INIT_PROCESS_STACK;
+	asm volatile("msr psp, %0" :  : "r" (value) : );
+}
+
 void init_vectors() {
 	_nvic->enable = (1 << 20);
 	asm volatile("cpsie i" : : : );

@@ -6,7 +6,7 @@
 #include "libs/printf.h"
 #include "apps/injection_trainer.h"
 #include "drivers/aic.h"
-#include "memory-map.h"
+#include "board.h"
 
 
 // needed to prevent gcc from optimizing c_entry out.
@@ -17,9 +17,11 @@ extern void init_stacks();
 
 __attribute__((interrupt ("IRQ")))
 void system_interrupt_hand() {
+	//debug_put_char("!");
 	dbgu_interupt_callback();
 	timer_interrupt_callback();
-	enable_interrupts();
+	acknowledge_interrupt();
+	//enable_interrupts();
 }
 
 /* MAIN */
@@ -39,7 +41,7 @@ void c_entry(void) {
 	printf("Yes Interrupts\r\n%x\r\n", buff);
 
 	set_interrupt_handler(1, &system_interrupt_hand, 0, 0);
-	set_timer_interval(1000);
+	//set_timer_interval(10000);
 
 	volatile aic* inter_tset = (aic*) AIC;
 

@@ -268,14 +268,8 @@ int uart_init ( void )
 
 //	*hw_clear_alias(&uart0->isr_mask) = ISR_RX;
 	//uart0->isr_clear = 0xFFFFFFFF;
-	recv_buff.buf_size = 256;
-	recv_buff.c_size = 0;
-	recv_buff.read = 0;
-	recv_buff.write = 0;
-	send_buff.buf_size = 256;
-	send_buff.c_size = 0;
-	send_buff.read = 0;
-	send_buff.write = 0;
+	blq_init(&recv_buff);
+	blq_init(&send_buff);
 	
 	*hw_clear_alias(&uart0->isr_mask) = 0xFFFFFFFF;
 	*hw_set_alias(&uart0->isr_mask) = ISR_RX_FULL | ISR_RX_DROPPED | ISR_OVERRUN_ERROR | ISR_PARITY_ERROR | ISR_BREAK_ERROR | ISR_FRAME_ERROR;
@@ -315,9 +309,6 @@ sequence_io_status uart_async_write_flush() {
 
 uint uart_async_read_flush() {
 	uint out = recv_buff.c_size;
-	recv_buff.buf_size = 256;
-	recv_buff.c_size = 0;
-	recv_buff.read = 0;
-	recv_buff.write = 0;
+	blq_init(&recv_buff);
 	return out;
 }
