@@ -13,10 +13,10 @@ lds := $(board_dir)/kernel.lds
 
 
 # any extras you neet to have built
-prod += kernel.bin
+prod += kernel.img
 
 # and how to build them (could use full name here aswell)
-%.bin: %.elf
+%.img: %.elf
 	$(ARMGNU)-objcopy --srec-forceS3 $^ -O srec $(build_dir)/kernel.srec
 	$(ARMGNU)-objcopy $(build_dir)/kernel.elf -O binary $@
 

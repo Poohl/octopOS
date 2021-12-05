@@ -60,6 +60,6 @@ This provides the possibility to test the kernel without having a local build of
 
 ¹To run the code, you have to connect the pi-pico via SWD to openOCD and start the debugger pointed at the openOCD, like so:
 ```
-make platform=pi-pico build=<you choose> debugger_target=<openOCD host>:<openOCD port> debugger_load=1 debugger
+make platform=pi-pico build=<you choose> debug_target=<openOCD host>:<openOCD port> debug_load=1 debugger
 ```
 ² consult corresponding [README](https://git.imp.fu-berlin.de/weip00/octopos/-/blob/main/boards/pi-zero/README.md)

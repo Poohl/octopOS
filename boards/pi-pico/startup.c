@@ -6,6 +6,7 @@
 #include "libs/printf.h"
 #include "fluff/fluff.h"
 #include "apps/injection_trainer.h"
+#include "apps/demo.h"
 #include "libs/hardware.h"
 #include "vectors.h"
 
