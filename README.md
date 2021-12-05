@@ -55,7 +55,7 @@ This provides the possibility to test the kernel without having a local build of
 | Platform | compile | flash + run | debugger |
 | --- | --- | --- | --- |
 | portux (in qemu) | yes | yes, with `run` | yes |
-| pi-pico | yes | no, see¹ | yes¹ |
+| pi-pico | yes | manual³ | yes¹ |
 | pi-zero | yes | yes² | nope |
 
 ¹To run the code, you have to connect the pi-pico via SWD to openOCD and start the debugger pointed at the openOCD, like so:
@@ -63,3 +63,5 @@ This provides the possibility to test the kernel without having a local build of
 make platform=pi-pico build=<you choose> debug_target=<openOCD host>:<openOCD port> debug_load=1 debugger
 ```
 ² consult corresponding [README](https://git.imp.fu-berlin.de/weip00/octopos/-/blob/main/boards/pi-zero/README.md)
+
+³A standard uf2 file is produded, these cannot be flashed automatically.
