@@ -110,3 +110,8 @@ sequence_io_status dbgu_async_write_flush() {
 	sequence_io_status out = {0,0};
 	return out;
 }
+
+byte get_recvbuff_head() {
+	while (recv_buff.c_size == 0) asm("":::"memory"); // DON'T TOUCH THIS OR IT BREAKS!!!
+	return blq_pop(&recv_buff);
+}

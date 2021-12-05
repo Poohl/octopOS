@@ -7,6 +7,7 @@
 #include "apps/injection_trainer.h"
 #include "drivers/aic.h"
 #include "board.h"
+#include "libs/delay.h"
 
 
 // needed to prevent gcc from optimizing c_entry out.
@@ -26,12 +27,14 @@ void system_interrupt_hand() {
 
 /* MAIN */
 void c_entry(void) {
-	/* init driver */
+	/* init  */
 	dbgu_init();
 	init_stacks();
 	init_vector_handling();
 
+	/* interrups */
 	u32 buff;
+
 	asm("mrs %0, cpsr" :  "=r" (buff) : : );
 	printf("No Interrupts:\r\n%x\r\n", buff);
 
@@ -41,8 +44,16 @@ void c_entry(void) {
 	printf("Yes Interrupts\r\n%x\r\n", buff);
 
 	set_interrupt_handler(1, &system_interrupt_hand, 0, 0);
-	//set_timer_interval(10000);
 
+	/* system clock */
+	/*    SET INTERVAL HERE
+						||
+						||
+					   \  /
+					    \/			*/
+	set_timer_interval(10000);
+
+	/* interrupt enable @ aic (2)*/
 	volatile aic* inter_tset = (aic*) AIC;
 
 	inter_tset->enable = 2;
@@ -56,9 +67,21 @@ void c_entry(void) {
 	dbgu_write_async(17, "async writing!\r\n");
 	dbgu_async_write_flush();
 
+	/* interrupt tst loop*/
+	while (42) {
+		char c = get_recvbuff_head();
+		for (int i = 0; i < 69; ++i) {
+			printf("%c", c);
+			worstdelayever(10);
+		}
+		dbgu_async_read_flush();
+	}
+	
+
+/*
 	print_banner();
 	injection_trainer();
-
+*/
 	/* run stuff 
 	print_banner();
 	asm(".word 0x775f0074" : : : "memory");

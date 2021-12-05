@@ -23,7 +23,7 @@ AS_DEBUG_FLAGS =
 INCLUDE = . ./boards/$(platform)
 
 CC = arm-none-eabi-gcc
-CC_FLAGS = -Wall -O2 -c -Wextra -ffreestanding -Wno-override-init
+CC_FLAGS = -Wall -O2 -c -Wextra -ffreestanding -Wno-override-init -std=gnu17
 CC_FLAGS += $(addprefix -I,$(INCLUDE)) -include default.h
 CC_DEBUG_FLAGS = -g -DDEBUG
 
