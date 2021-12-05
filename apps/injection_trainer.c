@@ -1,17 +1,14 @@
 
 
 #include "default.h"
+#include "apps/injection_trainer.h"
 #include "libs/hardware.h"
-#include "memory-map.h"
 #include "libs/printf.h"
-
-typedef u32 default_instruction;
+#include "board.h"
 
 static default_instruction payload[64+1];
 
 extern default_instruction in_tr_ret, in_tr_nop;
-
-void injection_trainer();
 
 
 static void help() {
@@ -57,7 +54,6 @@ static void help() {
 	);
 }
 
-
 default_instruction toInt(char* hexStr) {
 	default_instruction ret = 0;
 	int asciiOffset;
@@ -67,7 +63,7 @@ default_instruction toInt(char* hexStr) {
 			asciiOffset = 48;
 		else 
 			asciiOffset = 87;
-		ret += (hexStr[i] - asciiOffset) * (1 << 4*(7-i));
+		ret = (ret << 4) + (hexStr[i] - asciiOffset);
 	}
 	return ret;
 }
@@ -104,7 +100,6 @@ int inject_code() {
 	return instrcnt;
 }
 
-
 void injection_trainer() {
 	int score = 0;
 	int p = 0;
@@ -118,7 +113,11 @@ void injection_trainer() {
 		if (p <= 1)
 			help();
 
-		((void_void_func_ptr) &payload)();
+#ifndef __ARM_ARCH_ISA_ARM
+		((void_void_func_ptr) ((u32) &payload[0] | 1))();
+#else 
+		((void_void_func_ptr) &payload[0])();	
+#endif
 		score += p >> 2;
 		if (p > 0)
 			score += p >> 2;

@@ -2,7 +2,7 @@
 #include "dbgu.h"
 
 #include "default.h"
-#include "memory-map.h"
+#include "board.h"
 #include "libs/hardware.h"
 #include "libs/loop_queue.h"
 
@@ -29,18 +29,14 @@
 static volatile if_hw_mem_dbgu* dbgu;
 
 static byte_loop_queue send_buff;
-static volatile byte _send_buff[256];
 static byte_loop_queue recv_buff;
-static volatile byte _recv_buff[256];
 
 int dbgu_init() {
 	dbgu = (if_hw_mem_dbgu*) DBGU;
 	dbgu->control = CONTROL_ENABLE_RX | CONTROL_RESET_STATUS_BITS;
 	dbgu->interrupt_enable = STATUS_RX_READY;
-	byte_loop_queue _lovely_c_spec = {
-		256,0,0,0
-	};
-	send_buff = recv_buff = _lovely_c_spec;
+	blq_init(&send_buff);
+	blq_init(&recv_buff);
 	return 0;
 }
 
@@ -90,8 +86,13 @@ void dbgu_interupt_callback() {
 
 void dbgu_write_async(uint len, const byte* data) {
 	blq_push_multi(&send_buff, data, len);
+	//printf("shits and giggles\r\n");
 	dbgu->interrupt_enable = STATUS_TX_READY;
-	dbgu_interupt_callback();
+	//asm volatile("nop\n nop");
+	 // return from startup
+	//asm volatile("nop\n nop\n nop\n nop\n nop\n nop\n nop\n nop" : : : "memory", "lr"); // hard reset cpu & crash gdb
+	dbgu_interupt_callback(); // return from _startup
+	// Fun fact: if you uncomment the line above, somehow the return from ISR breaks
 }
 
 uint dbgu_read_async(uint len, byte* dest) {
@@ -100,15 +101,12 @@ uint dbgu_read_async(uint len, byte* dest) {
 
 uint dbgu_async_read_flush() {
 	uint out = recv_buff.c_size;
-	byte_loop_queue _lovely_c_spec = {
-		256,0,0,0
-	};
-	recv_buff = _lovely_c_spec;
+	blq_init(&recv_buff);
 	return out;
 }
 
 sequence_io_status dbgu_async_write_flush() {
-	while (dbgu->interrupt_mask & STATUS_TX_READY);
+	while (dbgu->interrupt_mask & STATUS_TX_READY) asm volatile("":::);
 	sequence_io_status out = {0,0};
 	return out;
 }

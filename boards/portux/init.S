@@ -1,5 +1,5 @@
 
-#include "memory-map.h"
+#include "board.h"
 
 .section .init, "ax"
 .global _start

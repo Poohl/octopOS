@@ -6,7 +6,7 @@
 #include "libs/printf.h"
 #include "apps/injection_trainer.h"
 #include "drivers/aic.h"
-#include "memory-map.h"
+#include "board.h"
 #include "libs/delay.h"
 
 
@@ -18,9 +18,11 @@ extern void init_stacks();
 
 __attribute__((interrupt ("IRQ")))
 void system_interrupt_hand() {
+	//debug_put_char("!");
 	dbgu_interupt_callback();
 	timer_interrupt_callback();
-	enable_interrupts();
+	acknowledge_interrupt();
+	//enable_interrupts();
 }
 
 /* MAIN */
@@ -61,6 +63,9 @@ void c_entry(void) {
 
 	dbgu_test->interrupt_disable = 0xFFFFFFFF;
 	dbgu_test->interrupt_enable = 1;
+
+	dbgu_write_async(17, "async writing!\r\n");
+	dbgu_async_write_flush();
 
 	/* interrupt tst loop*/
 	while (42) {

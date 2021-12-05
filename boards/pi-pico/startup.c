@@ -5,10 +5,13 @@
 #include "drivers/uart.h"
 #include "libs/printf.h"
 #include "fluff/fluff.h"
+#include "apps/injection_trainer.h"
 #include "apps/demo.h"
 #include "libs/hardware.h"
+#include "vectors.h"
 
 // needed to prevent gcc from optimizing c_entry out.
+
 #pragma GCC push_options
 #pragma GCC optimize ("O0")
 
@@ -18,10 +21,18 @@ void _start(void) {
 	*((u32*) SYS_CTL_VTOR) = VECTORS_BASE;
 	uart_init();
 
-	asm(".word 0xb787":::"memory");
+	init_stacks();
+	init_vectors();
+
+	uart_write_async(27, "This is same async stuff\r\n");
+	uart_async_write_flush();
+
+
+	set_timer_interval(1000000);
 
 	print_banner();
-	io_demo();
+	injection_trainer();
+
 
 }
 

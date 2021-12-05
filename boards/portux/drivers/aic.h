@@ -34,4 +34,7 @@ typedef struct {
 #define AIC_MODE_TRIGGER_HIGH (0b10 << 5)
 #define AIC_MODE_TRIGGER_FALLING (0b11 << 5)
 
+#define acknowledge_interrupt() \
+	((aic*) (AIC))->signal_end = 1
+
 #endif
