@@ -1,4 +1,4 @@
-#include "memory-map.h"
+#include "board.h"
 #include "libs/hardware.h"
 
 .section .vectors, "ax"

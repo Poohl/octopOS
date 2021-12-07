@@ -7,8 +7,12 @@
 
 typedef byte_loop_queue blq;
 
+void blq_init(blq* self) {
+	self->c_size = self->write = self->read = 0;
+}
+
 uint blq_get_space(blq* self) {
-	return self->buf_size - self->c_size;
+	return 0x100 - self->c_size;
 }
 
 int blq_push_multi(blq* self, const byte* data, uint len) {
@@ -18,7 +22,7 @@ int blq_push_multi(blq* self, const byte* data, uint len) {
 }
 
 bool blq_push(blq* self, byte data) {
-	if (self->c_size < self->buf_size) {
+	if (self->c_size < 0x100) {
 		self->buffer[(self->write = (self->write + 1) & 0xFF)] = data;
 		self->c_size += 1;
 		return true;

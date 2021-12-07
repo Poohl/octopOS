@@ -2,7 +2,7 @@
 
 #include "system_timer.h"
 
-#include "memory-map.h"
+#include "board.h"
 
 #include "libs/hardware.h"
 

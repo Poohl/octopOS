@@ -1,6 +1,7 @@
 
 #include "default.h"
-#include "memory-map.h"
+#include "board.h"
+
 #include "vectors.h"
 #include "libs/hardware.h"
 #include "aic.h"
@@ -27,6 +28,7 @@ static void undef_interrupt_hand() {
 	exception_handler(EXCEPTION_UNEXPECTED_ISR, NULL, ((aic*) AIC)->status);
 	_aic->signal_end = 1;
 	_aic->clear = 1 << _aic->status;
+	acknowledge_interrupt();
 	enable_interrupts();
 }
 
