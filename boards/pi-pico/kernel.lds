@@ -8,6 +8,11 @@ SECTIONS
 	.text : { *(.text) }
 	/* and once more with feeling */
 	.rodata : { *(.rodata*) }
+
+	/* ahh shit, here we go again */
+	__exidx_start = .;
+	.ARM.exidx   : { *(.ARM.exidx* .gnu.linkonce.armexidx.*) }
+	__exidx_end = .;
 	
 	. = 0x20000000;
 	COMMON : { *(COMMON) }
