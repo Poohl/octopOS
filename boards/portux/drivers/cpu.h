@@ -6,7 +6,7 @@
 #include "board.h"
 
 typedef struct {
-	u32 registers[14];
+	u32 registers[13];
 	u32 pc;
 	u32 sp;
 	u32 lr;

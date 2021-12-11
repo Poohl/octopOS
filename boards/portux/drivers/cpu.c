@@ -38,6 +38,8 @@ void init_thread(tcb* dest, void_void_func_ptr start, u32* stack, void_void_func
 }
 
 void cpu_init() {
+	current = 1;
+	memset(processes, 0, sizeof(processes));
 	init_thread(&processes[0], &idle, &processes[0].context.registers[12], &idle, true);
 }
 
@@ -73,7 +75,7 @@ void swap(tcb* curr, u32* curr_context, tcb* next) {
 	//save sp & lr, move in new ones
 	u32 a,b,c = next->context.sp, d = next->context.lr;
 	 
-	asm(
+	asm volatile(
 		"MRS r3,CPSR\n"
 		"BIC r4,r3,#0x1F\n"
 		"ORR r4,r4,#0b11111\n"
@@ -83,9 +85,9 @@ void swap(tcb* curr, u32* curr_context, tcb* next) {
 		"mov sp, %2\n"
 		"mov lr, %3\n"
 		"MSR cpsr, r3\n"
-		: "=r" (a), "=r" (b)
+		: "+r" (a), "+r" (b)
 		: "r" (c), "r" (d) 
-		: "r3", "r4", "memory"
+		: "r3", "r4", "memory", "sp", "lr", "cc"
 	);
 	curr->context.sp = a;
 	curr->context.lr = b;

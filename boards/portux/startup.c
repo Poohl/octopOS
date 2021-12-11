@@ -64,12 +64,14 @@ void c_entry(void) {
 
 	/* interrupt tst loop*/
 	while (42) {
+		asm volatile("nop":::);
+		/*
 		char c = get_recvbuff_head();
 		for (int i = 0; i < 69; ++i) {
 			printf("%c", c);
 			worstdelayever(10);
 		}
-		dbgu_async_read_flush();
+		dbgu_async_read_flush();*/
 	}
 	
 
