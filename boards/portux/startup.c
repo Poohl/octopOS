@@ -8,6 +8,7 @@
 #include "drivers/aic.h"
 #include "board.h"
 #include "libs/delay.h"
+#include "drivers/cpu.h"
 
 
 // needed to prevent gcc from optimizing c_entry out.
@@ -16,14 +17,7 @@
 
 extern void init_stacks();
 
-__attribute__((interrupt ("IRQ")))
-void system_interrupt_hand() {
-	//debug_put_char("!");
-	dbgu_interupt_callback();
-	timer_interrupt_callback();
-	acknowledge_interrupt();
-	//enable_interrupts();
-}
+extern void system_interrupt_hand();
 
 /* MAIN */
 void c_entry(void) {
@@ -37,6 +31,7 @@ void c_entry(void) {
 
 	asm("mrs %0, cpsr" :  "=r" (buff) : : );
 	printf("No Interrupts:\r\n%x\r\n", buff);
+	cpu_init();
 
 	enable_interrupts();
 
@@ -64,8 +59,8 @@ void c_entry(void) {
 	dbgu_test->interrupt_disable = 0xFFFFFFFF;
 	dbgu_test->interrupt_enable = 1;
 
-	dbgu_write_async(17, "async writing!\r\n");
-	dbgu_async_write_flush();
+	//dbgu_write_async(17, "async writing!\r\n");
+	//dbgu_async_write_flush();
 
 	/* interrupt tst loop*/
 	while (42) {
