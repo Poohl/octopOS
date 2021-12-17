@@ -5,6 +5,7 @@
 #include "board.h"
 #include "libs/hardware.h"
 #include "libs/loop_queue.h"
+#include "cpu.h"
 
 #define CONTROL_RESET_RX (1 << 2)
 #define CONTROL_ENABLE_RX (1 << 4)
@@ -109,6 +110,10 @@ sequence_io_status dbgu_async_write_flush() {
 	while (dbgu->interrupt_mask & STATUS_TX_READY) asm volatile("":::);
 	sequence_io_status out = {0,0};
 	return out;
+}
+
+void printyprint() {
+	printf("yee\n");
 }
 
 byte get_recvbuff_head() {

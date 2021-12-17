@@ -13,13 +13,29 @@ typedef struct {
 	u32 cpsr;
 } cpu_context;
 
+#define DEAD	0
+#define ALIVE	1
+#define ZOMBIE	2
+
 typedef struct {
 	uint id;
-	bool alive;
+	int state;
 	cpu_context context;
 } tcb;
 
-void init_thread(tcb* dest, void_void_func_ptr start, u32* stack, void_void_func_ptr exit, bool is_sys);
+typedef struct {
+	int buff[16];
+	int available;
+	int next;
+} tcb_queue;
+
+void init_tcb_queue(tcb_queue* q);
+int get_tcb_slot(tcb_queue* q);
+void release_tcb_slot(tcb_queue* q, int slt);
+int new_thread(void_void_func_ptr func, bool is_sys, int arg);
+void init_thread(tcb* dest, uint id, void_void_func_ptr start, u32* stack, void_void_func_ptr exit, bool is_sys, u32 arg);
+
+void exit();
 
 void cpu_init();
 
