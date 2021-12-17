@@ -3,7 +3,7 @@
 #define DBGU_H
 
 #include "default.h"
-#include "libs/hardware.h"
+#include "kernel/hardware.h"
 
 // see page 330 of https://mycampus.imp.fu-berlin.de/access/content/group/90533309-52c5-4d21-b65c-97b90b130b6c/AT91RM9200.pdf
 typedef struct {

@@ -3,7 +3,7 @@
 
 #include "default.h"
 #include "board.h"
-#include "libs/hardware.h"
+#include "kernel/hardware.h"
 #include "libs/loop_queue.h"
 
 #define CONTROL_RESET_RX (1 << 2)

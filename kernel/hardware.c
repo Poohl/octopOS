@@ -39,14 +39,21 @@ static const char* exception_fmt[] = {
 
 #define exception_fmt_len (sizeof(exception_fmt)/sizeof(exception_fmt[0]))
 
-__attribute__((weak)) void exception_handler(int type, void* instruction, void* data) {
+__attribute__((weak)) action_enum exception_handler(int type, void* instruction, void* data) {
 	printf(exception_fmt[type], instruction, data);
+	return ACTION_NONE;
 }
 
-__attribute__((weak)) void syscall_handler(int syscall, void* source) {
+__attribute__((weak)) action_enum syscall_handler(int syscall, void* source) {
 	printf("Syscall %x triggered at %p\r\n", syscall, source);
+	return ACTION_NONE;
 }
 
-__attribute__((weak)) void timer_handler() {
+__attribute__((weak)) action_enum timer_handler() {
 	debug_write(3, "!\r\n");
+	return ACTION_THREAD_SWAP_CALLBACK;
+}
+
+__attribute__((weak)) void tight_powersave() {
+	while (1);
 }

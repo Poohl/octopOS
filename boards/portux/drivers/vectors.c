@@ -3,7 +3,7 @@
 #include "board.h"
 
 #include "vectors.h"
-#include "libs/hardware.h"
+#include "kernel/hardware.h"
 #include "aic.h"
 #include "libs/printf.h"
 #include "drivers/dbgu.h"
@@ -24,11 +24,12 @@ extern void UNDEF_ISR();
 volatile aic* _aic;
 
 __attribute__((interrupt ("IRQ")))
-static void undef_interrupt_hand() {
-	exception_handler(EXCEPTION_UNEXPECTED_ISR, NULL, ((aic*) AIC)->status);
+static action_enum undef_interrupt_hand() {
+	action_enum out = exception_handler(EXCEPTION_UNEXPECTED_ISR, NULL, ((aic*) AIC)->status);
 	_aic->signal_end = 1;
 	_aic->clear = 1 << _aic->status;
 	acknowledge_interrupt();
+	return out;
 }
 
 void init_vector_handling() {

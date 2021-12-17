@@ -9,6 +9,7 @@
 #include "board.h"
 #include "libs/delay.h"
 #include "drivers/cpu.h"
+#include "kernel/process_mgmt.h"
 
 
 // needed to prevent gcc from optimizing c_entry out.
@@ -28,15 +29,9 @@ void c_entry(void) {
 
 	/* interrups */
 	u32 buff;
-
-	asm("mrs %0, cpsr" :  "=r" (buff) : : );
-	printf("No Interrupts:\r\n%x\r\n", buff);
-	cpu_init();
+	processes_init();
 
 	enable_interrupts();
-
-	asm("mrs %0, cpsr" :  "=r" (buff) : : );
-	printf("Yes Interrupts\r\n%x\r\n", buff);
 
 	set_interrupt_handler(1, &system_interrupt_hand, 0, 0);
 

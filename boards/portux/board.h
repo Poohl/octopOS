@@ -46,11 +46,20 @@
 typedef u32 default_instruction;
 
 #define enable_interrupts() \
+	u32 _go_to_heck_gcc; \
 	asm volatile ( \
-		"MRS r0,CPSR\n" \
-		"BIC r0,r0,#0b11000000\n" \
-		"MSR cpsr, r0\n" \
-		: : : "r0", "memory")
+		"MRS %0,CPSR\n" \
+		"BIC %0,%0,#0b11000000\n" \
+		"MSR cpsr, %0\n" \
+		: "=&r" (_go_to_heck_gcc) : : "memory")
+
+typedef struct {
+	u32 registers[13];
+	u32 pc;
+	u32 sp;
+	u32 lr;
+	u32 cpsr;
+} cpu_context;
 
 #endif
 

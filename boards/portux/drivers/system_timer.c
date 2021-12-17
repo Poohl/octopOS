@@ -4,7 +4,7 @@
 
 #include "board.h"
 
-#include "libs/hardware.h"
+#include "kernel/hardware.h"
 
 #define STATUS_PERIOD (1 << 0)
 #define STATUS_ALARM (1 << 3)
@@ -25,12 +25,11 @@ int set_timer_interval(uint period) {
 	return 0;
 }
 
-bool timer_interrupt_callback() {
+action_enum timer_interrupt_callback() {
 	u32 status = st->status;
 	if (status & STATUS_PERIOD) {
-		timer_handler();
-		return true;
+		return timer_handler();
 	}
-	return false;
+	return ACTION_NONE;
 }
 
