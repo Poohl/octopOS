@@ -41,6 +41,6 @@ void cpu_init();
 
 void thread_swap_callback(u32* context);
 
-void swap(tcb* curr, u32* curr_context, tcb* next);
+void swap(cpu_context* curr, u32* curr_context, cpu_context* next);
 
 #endif
