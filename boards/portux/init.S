@@ -27,4 +27,7 @@ system_interrupt_hand:
 	cmp r0, #0
 	movne r0, sp
 	blne thread_swap_callback
+	// I swear to god gcc, if I find a solution to this: PC + imm = AIC + 0x130 I'll come over an murder you
+	ldr r0, =#AIC+0x130
+	str r0, [r0]
 	ldm	sp!, {r0-r12, pc}^
