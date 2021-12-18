@@ -28,7 +28,7 @@ tcb_queue tcbq;
 void init_tcb_queue(tcb_queue* q) {
 	for (int i = 0; i < 16; ++i)
 		q->buff[i] = i;
-	q->available = 16;
+	q->available = 15;
 	q->next = 0;
 }
 
@@ -78,7 +78,9 @@ int new_thread(char* name, init_thread_state_args* args) {
 	cpu_context_init(&processes[id].context, args);
 	processes[id].name[7] = 0;
 	memcpy(&processes[id].name, name, 7);
+	processes[id].id = id;
 	processes[id].state = ALIVE;
+	printf("created thread with id %x\n", id);
 	return id;
 }
 
@@ -103,6 +105,7 @@ void thread_swap_callback(u32* context) {
 		if (processes[next].state == ZOMBIE) {
 			release_tcb_slot(&tcbq, processes[next].id);
 			processes[next].state = DEAD;
+			printf("BOOM! -> %x\n", processes[next].id);
 		}
 	}
 	if (next == current) {
@@ -111,4 +114,14 @@ void thread_swap_callback(u32* context) {
 	printf("Swap from slot %x to %x", current, next);
 	swap(&processes[current].context, context, &processes[next].context);
 	current = next;
+	print_q(&tcbq);
+}
+
+void print_q(tcb_queue* q) {
+	printf("### Q:\n");
+	printf("av: %x\n",q->available);
+	for (int i = 0; i < 16; ++i)
+		printf("%x, ", q->buff[i]);
+	printf("\nnx: %x\n",q->next);
+	printf("######\n");
 }
