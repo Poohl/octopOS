@@ -4,10 +4,12 @@
 
 #include "default.h"
 #include "board.h"
+#include "kernel/process_mgmt.h"
 
 void printf_cpsr(u32 cpsr);
 
-typedef struct {
+// this _ccccccc thing is very important (see kernel/process_mgmt.h)
+typedef struct _ccccccc {
 	u32 registers[13];
 	u32 pc;
 	u32 sp;
@@ -15,33 +17,11 @@ typedef struct {
 	u32 cpsr;
 } cpu_context;
 
-#define DEAD	0
-#define ALIVE	1
-#define ZOMBIE	2
+void cpu_context_init(cpu_context* dest, const init_thread_state_args* src);
 
-typedef struct {
-	uint id;
-	int state;
-	cpu_context context;
-} tcb;
+bool cpu_context_validate(cpu_context* dest, bool may_be_sys);
 
-typedef struct {
-	int buff[16];
-	int available;
-	int next;
-} tcb_queue;
-
-void init_tcb_queue(tcb_queue* q);
-int get_tcb_slot(tcb_queue* q);
-void release_tcb_slot(tcb_queue* q, int slt);
-int new_thread(void_void_func_ptr func, bool is_sys, int arg);
-void init_thread(tcb* dest, uint id, void_void_func_ptr start, u32* stack, void_void_func_ptr exit, bool is_sys, u32 arg);
-
-void exit();
-
-void cpu_init();
-
-void thread_swap_callback(u32* context);
+void tight_powersave();
 
 void swap(cpu_context* curr, u32* curr_context, cpu_context* next);
 

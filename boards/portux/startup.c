@@ -9,6 +9,7 @@
 #include "board.h"
 #include "libs/delay.h"
 #include "drivers/cpu.h"
+#include "kernel/process_mgmt.h"
 
 
 // needed to prevent gcc from optimizing c_entry out.
@@ -31,7 +32,7 @@ void c_entry(void) {
 
 	asm("mrs %0, cpsr" :  "=r" (buff) : : );
 	printf_cpsr(buff);
-	cpu_init();
+	init_process_mgmt();
 
 	enable_interrupts();
 

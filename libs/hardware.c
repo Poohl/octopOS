@@ -50,3 +50,15 @@ __attribute__((weak)) void syscall_handler(int syscall, void* source) {
 __attribute__((weak)) void timer_handler() {
 	debug_write(3, "!\r\n");
 }
+
+__attribute__((weak)) void *memset(void *s, int c, size_t n) {
+	for (size_t i = 0; i < n; ++i)
+		((byte*) s)[i] = c;
+	return s;
+}
+
+__attribute__((weak)) void *memcpy(void *dest, const void *src, size_t n) {
+	for (size_t i = 0; i < n; ++i)
+		((byte*) dest)[i] = ((byte*) src)[i];
+	return dest;
+}
