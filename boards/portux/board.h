@@ -26,6 +26,19 @@
 
 
 
+#define CPSR_FLAG_NEGATIVE          (1 << 31)
+#define CPSR_FLAG_ZERO              (1 << 30)
+#define CPSR_FLAG_CARRY             (1 << 29)
+#define CPSR_FLAG_OVERFLOW          (1 << 28)
+#define CPSR_FLAG_SATURATION        (1 << 37)
+#define CPSR_FLAG_JAZELLE           (1 << 24)
+#define CPSR_FLAG_BIG_ENDIAN        (1 <<  9)
+#define CPSR_FLAG_ASYNC_ABORT_MASK  (1 <<  8)
+#define CPSR_FLAG_IRQ               (1 <<  7)
+#define CPSR_FLAG_FIRQ              (1 <<  6)
+#define CPSR_FLAG_THUMB             (1 <<  5)
+#define CPSR_FLAG_MODE_MASK            (0x1f)
+
 #define MODE_USR 0b10000
 #define MODE_FIQ 0b10001
 #define MODE_IRQ 0b10010

@@ -30,13 +30,13 @@ void c_entry(void) {
 	u32 buff;
 
 	asm("mrs %0, cpsr" :  "=r" (buff) : : );
-	printf("No Interrupts:\r\n%x\r\n", buff);
+	printf_cpsr(buff);
 	cpu_init();
 
 	enable_interrupts();
 
 	asm("mrs %0, cpsr" :  "=r" (buff) : : );
-	printf("Yes Interrupts\r\n%x\r\n", buff);
+	printf_cpsr(buff);
 
 	set_interrupt_handler(1, &system_interrupt_hand, 0, 0);
 

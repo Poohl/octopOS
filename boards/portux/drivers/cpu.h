@@ -5,6 +5,8 @@
 #include "default.h"
 #include "board.h"
 
+void printf_cpsr(u32 cpsr);
+
 typedef struct {
 	u32 registers[13];
 	u32 pc;

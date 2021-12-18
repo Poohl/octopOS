@@ -2,11 +2,52 @@
 #include "default.h"
 #include "board.h"
 #include "cpu.h"
+#include "libs/printf.h"
 
 uint current = 0;
 
 tcb processes[16];
-tcb_queue tcbq;	
+tcb_queue tcbq;
+
+void printf_cpsr(u32 cpsr) {
+	const char* mode_str[] = {
+		"USR",
+		"FIQ",
+		"IRQ",
+		"SVC",
+		"ERR",
+		"ERR",
+		"ERR",
+		"ABT",
+		"ERR",
+		"ERR",
+		"ERR",
+		"UND",
+		"ERR",
+		"ERR",
+		"ERR",
+		"SYS"
+	};
+	printf(
+			"%c%c%c%c %c??%c ???? ???? ??%c%c %c%c%c# %s\r\n", 
+			(cpsr & CPSR_FLAG_NEGATIVE        ) ? 'N' : ' ',
+			(cpsr & CPSR_FLAG_ZERO            ) ? 'Z' : ' ',
+			(cpsr & CPSR_FLAG_CARRY           ) ? 'C' : ' ',
+			(cpsr & CPSR_FLAG_OVERFLOW        ) ? 'V' : ' ',
+			
+			(cpsr & CPSR_FLAG_SATURATION      ) ? 'Q' : ' ',
+			(cpsr & CPSR_FLAG_JAZELLE         ) ? 'J' : ' ',
+			
+			(cpsr & CPSR_FLAG_BIG_ENDIAN      ) ? 'E' : ' ',
+			(cpsr & CPSR_FLAG_ASYNC_ABORT_MASK) ? 'A' : ' ',
+			
+			(cpsr & CPSR_FLAG_IRQ             ) ? 'I' : ' ',
+			(cpsr & CPSR_FLAG_FIRQ            ) ? 'F' : ' ',
+			(cpsr & CPSR_FLAG_THUMB           ) ? 'T' : ' ',
+			
+			(cpsr & 0x10) ? mode_str[cpsr & 0xF] : "ERR"
+	);
+}
 
 void init_tcb_queue(tcb_queue* q) {
 	for (int i = 0; i < 16; ++i)
@@ -59,7 +100,10 @@ void init_thread(tcb* dest, uint id, void_void_func_ptr start, u32* stack, void_
 	dest->state = ALIVE;
 	u32 tmp;
 	asm ("mrs %0, cpsr" : "=r" (tmp) : :);
-	tmp = (tmp & ~0x1F) | (is_sys ? MODE_SYS : MODE_USR);
+	// clear mode & interrupt mask
+	tmp &= ~(CPSR_FLAG_MODE_MASK | CPSR_FLAG_IRQ | CPSR_FLAG_FIRQ);
+	// set mode
+	tmp |= (is_sys ? MODE_SYS : MODE_USR);
 	dest->context.cpsr = tmp;
 }
 
@@ -110,6 +154,12 @@ void thread_swap_callback(u32* context) {
 
 
 void swap(cpu_context* curr, u32* hw_context, cpu_context* next) {
+
+	printf("Swap status words:\r\n");
+	printf_cpsr(curr->cpsr);
+
+	printf_cpsr(next->cpsr);
+
 	// save r0-12, lr as pc
 	memcpy(curr, hw_context, sizeof(curr->registers) + sizeof(u32));
 	
