@@ -6,6 +6,7 @@
 #include "libs/hardware.h"
 #include "libs/loop_queue.h"
 #include "cpu.h"
+#include "kernel/process_mgmt.h"
 
 #define CONTROL_RESET_RX (1 << 2)
 #define CONTROL_ENABLE_RX (1 << 4)
@@ -70,10 +71,25 @@ int debug_get_char() {
 	return dbgu_get_byte_blocking();
 }
 
+static void slow_print(char c) {
+	for (int i = 0; i < c; ++i) {
+		debug_put_char(c);
+		for (int j = 0; j < 10000000; ++j)
+			asm volatile("" : : :);
+	}
+}
+
 void dbgu_interupt_callback() {
 	u32 status = dbgu->status;
 	if (status & STATUS_RX_READY) {
-		blq_push(&recv_buff, dbgu->rx);
+		//blq_push(&recv_buff, dbgu->rx);
+		init_thread_state_args args = default_init_thread_state_args;
+		args.start = slow_print;
+		args.args[0] = dbgu->rx;
+		args.is_sys = true;
+		args.stack_size = 0x100;
+		char name[] = {'T', 'e', 's', 't', ' ', (char) args.args[0]};
+		new_thread(name, &args);
 	}
 	if (status & STATUS_TX_READY) {
 		int out = blq_pop(&send_buff);
