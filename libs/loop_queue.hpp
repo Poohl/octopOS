@@ -21,8 +21,8 @@ template <typename T, uint size> class LoopQueue {
 			return i;
 		}
 		bool push(T elem) {
-			bool out;
-			if (out = (get_space() > 0))
+			bool out = get_space() > 0;
+			if (out)
 				buffer[(read + fill++) % size] = elem;
 			return out;
 		}

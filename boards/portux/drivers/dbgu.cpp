@@ -5,6 +5,9 @@ extern "C" {
 #include "default.h"
 #include "board.h"
 #include "libs/hardware.h"
+#include "cpu.h"
+#include "kernel/process_mgmt.h"
+#include "libs/printf.h"
 }
 #include "libs/loop_queue.hpp"
 
@@ -71,10 +74,25 @@ int debug_get_char() {
 	return dbgu_get_byte_blocking();
 }
 
+static void slow_print(char c) {
+	for (int i = 0; i < c; ++i) {
+		debug_put_char(c);
+		for (int j = 0; j < 10000000; ++j)
+			asm volatile("" : : :);
+	}
+}
+
 void dbgu_interupt_callback() {
 	u32 status = dbgu->status;
 	if (status & STATUS_RX_READY) {
-		recv_buff.push(dbgu->rx);
+		//recv_buff.push(dbgu->rx);
+		init_thread_state_args args = default_init_thread_state_args;
+		args.start = (void_void_func_ptr) slow_print;
+		args.args[0] = dbgu->rx;
+		args.is_sys = true;
+		args.stack_size = 0x100;
+		char name[] = {'T', 'e', 's', 't', ' ', (char) args.args[0]};
+		new_thread(name, &args);
 	}
 	if (status & STATUS_TX_READY) {
 		byte* out = send_buff.pop();
@@ -111,6 +129,10 @@ sequence_io_status dbgu_async_write_flush() {
 	while (dbgu->interrupt_mask & STATUS_TX_READY) asm volatile("":::);
 	sequence_io_status out = {0,0};
 	return out;
+}
+
+void printyprint() {
+	printf("yee\n");
 }
 
 byte get_recvbuff_head() {

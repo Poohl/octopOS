@@ -8,6 +8,8 @@
 #include "drivers/aic.h"
 #include "board.h"
 #include "libs/delay.h"
+#include "drivers/cpu.h"
+#include "kernel/process_mgmt.h"
 
 
 // needed to prevent gcc from optimizing c_entry out.
@@ -16,14 +18,7 @@
 
 extern void init_stacks();
 
-__attribute__((interrupt ("IRQ")))
-void system_interrupt_hand() {
-	//debug_put_char("!");
-	dbgu_interupt_callback();
-	timer_interrupt_callback();
-	acknowledge_interrupt();
-	//enable_interrupts();
-}
+extern void system_interrupt_hand();
 
 /* MAIN */
 void c_entry(void) {
@@ -36,12 +31,13 @@ void c_entry(void) {
 	u32 buff;
 
 	asm("mrs %0, cpsr" :  "=r" (buff) : : );
-	printf("No Interrupts:\r\n%x\r\n", buff);
+	printf_cpsr(buff);
+	init_process_mgmt();
 
 	enable_interrupts();
 
 	asm("mrs %0, cpsr" :  "=r" (buff) : : );
-	printf("Yes Interrupts\r\n%x\r\n", buff);
+	printf_cpsr(buff);
 
 	set_interrupt_handler(1, &system_interrupt_hand, 0, 0);
 
@@ -64,17 +60,19 @@ void c_entry(void) {
 	dbgu_test->interrupt_disable = 0xFFFFFFFF;
 	dbgu_test->interrupt_enable = 1;
 
-	dbgu_write_async(17, "async writing!\r\n");
-	dbgu_async_write_flush();
+	//dbgu_write_async(17, "async writing!\r\n");
+	//dbgu_async_write_flush();
 
 	/* interrupt tst loop*/
 	while (42) {
+		asm volatile("nop":::);
+		/*
 		char c = get_recvbuff_head();
 		for (int i = 0; i < 69; ++i) {
 			printf("%c", c);
 			worstdelayever(10);
 		}
-		dbgu_async_read_flush();
+		dbgu_async_read_flush();*/
 	}
 	
 

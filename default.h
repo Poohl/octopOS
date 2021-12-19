@@ -27,4 +27,8 @@ typedef void (*void_void_func_ptr)();
 #define ARR_LEN(ARR) \
 	(sizeof(ARR) / sizeof(ARR[0]))
 
+void *memset(void *s, int c, size_t n) ;
+
+void *memcpy(void *dest, const void *src, size_t n);
+
 #endif

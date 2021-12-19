@@ -29,7 +29,6 @@ static void undef_interrupt_hand() {
 	_aic->signal_end = 1;
 	_aic->clear = 1 << _aic->status;
 	acknowledge_interrupt();
-	enable_interrupts();
 }
 
 void init_vector_handling() {

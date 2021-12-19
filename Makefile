@@ -47,7 +47,7 @@ QEMU_FLAGS = -M portux920t -m 64M -nographic
 QEMU_DEBUG_FLAGS = -s -S
 
 # folders that include general code used regardless of platform
-src_dirs = apps drivers libs fluff
+src_dirs = apps drivers libs fluff kernel
 
 # fix path
 #headers := $(addprefix boards/$(platform),$(headers))
