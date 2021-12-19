@@ -1,10 +1,12 @@
+extern "C" {
 
 #include "dbgu.h"
 
 #include "default.h"
 #include "board.h"
 #include "libs/hardware.h"
-#include "libs/loop_queue.h"
+}
+#include "libs/loop_queue.hpp"
 
 #define CONTROL_RESET_RX (1 << 2)
 #define CONTROL_ENABLE_RX (1 << 4)
@@ -28,15 +30,15 @@
 
 static volatile if_hw_mem_dbgu* dbgu;
 
-static byte_loop_queue send_buff;
-static byte_loop_queue recv_buff;
+static LoopQueue<byte, 256> send_buff;
+static LoopQueue<byte, 256> recv_buff;
+
+extern "C" {
 
 int dbgu_init() {
 	dbgu = (if_hw_mem_dbgu*) DBGU;
 	dbgu->control = CONTROL_ENABLE_RX | CONTROL_RESET_STATUS_BITS;
 	dbgu->interrupt_enable = STATUS_RX_READY;
-	blq_init(&send_buff);
-	blq_init(&recv_buff);
 	return 0;
 }
 
@@ -72,12 +74,12 @@ int debug_get_char() {
 void dbgu_interupt_callback() {
 	u32 status = dbgu->status;
 	if (status & STATUS_RX_READY) {
-		blq_push(&recv_buff, dbgu->rx);
+		recv_buff.push(dbgu->rx);
 	}
 	if (status & STATUS_TX_READY) {
-		int out = blq_pop(&send_buff);
-		if (out >= 0) {
-			dbgu->tx = out;
+		byte* out = send_buff.pop();
+		if (out) {
+			dbgu->tx = *out;
 		} else {
 			dbgu->interrupt_disable = STATUS_TX_READY;
 		}
@@ -85,7 +87,7 @@ void dbgu_interupt_callback() {
 }
 
 void dbgu_write_async(uint len, const byte* data) {
-	blq_push_multi(&send_buff, data, len);
+	send_buff.push(data, len);
 	//printf("shits and giggles\r\n");
 	dbgu->interrupt_enable = STATUS_TX_READY;
 	//asm volatile("nop\n nop");
@@ -96,12 +98,12 @@ void dbgu_write_async(uint len, const byte* data) {
 }
 
 uint dbgu_read_async(uint len, byte* dest) {
-	return blq_pop_multi(&recv_buff, dest, len);
+	return recv_buff.pop(dest, len);
 }
 
 uint dbgu_async_read_flush() {
-	uint out = recv_buff.c_size;
-	blq_init(&recv_buff);
+	uint out = recv_buff.get_space();
+	recv_buff = LoopQueue<byte, 256>();
 	return out;
 }
 
@@ -112,6 +114,8 @@ sequence_io_status dbgu_async_write_flush() {
 }
 
 byte get_recvbuff_head() {
-	while (recv_buff.c_size == 0) asm("":::"memory"); // DON'T TOUCH THIS OR IT BREAKS!!!
-	return blq_pop(&recv_buff);
+	while (recv_buff.get_space() == 0) asm("":::"memory"); // DON'T TOUCH THIS OR IT BREAKS!!!
+	return *recv_buff.pop();
+}
+
 }

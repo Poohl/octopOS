@@ -57,6 +57,7 @@ src_dirs = apps drivers libs fluff
 
 # load general sources
 headers += $(shell find $(src_dirs) -name '*.h')
+hppeaders += $(shell find $(src_dirs) -name '*.h')
 c_src += $(shell find $(src_dirs) -name '*.c')
 cpp_src += $(shell find $(src_dirs) -name '*.cpp')
 S_src += $(shell find $(src_dirs) -name '*.S')
@@ -120,7 +121,7 @@ $(c_obj): $(build_dir)/%.o: %.c $(headers)
 	@mkdir -p $(@D)
 	$(CC) -o $@ $(CC_FLAGS) $<
 
-$(cpp_obj): $(build_dir)/%.o: %.cpp $(headers)
+$(cpp_obj): $(build_dir)/%.o: %.cpp $(headers) $(hppeaders)
 	@mkdir -p $(@D)
 	$(CXX) -o $@ $(CXX_FLAGS) $<
 
@@ -144,7 +145,7 @@ debugger:
 	gdb-multiarch $(if $(debug_load),,-s) $(build_dir)/kernel.elf -ex "target remote $(debug_target)" -ex "layout split" $(if $(debug_load), --ex "load")
 
 wordcount:
-	cat $(S_src) $(c_src) $(headers) | wc
+	cat $(S_src) $(c_src) $(headers) $(hppeaders) | wc
 
 clean:
 	rm -rf $(build_dir)
@@ -156,12 +157,15 @@ dependencies:
 make_var_test:
 	@echo c_obj: $(c_obj)
 	@echo S_obj: $(S_obj)
+	@echo cpp_obj: $(cpp_obj)
 	@echo build_dir: $(build_dir)
 	@echo CC_FLAGS: $(CC_FLAGS)
 	@echo AS_FLAGS: $(AS_FLAGS)
+	@echo CXX_FLAGS: $(CXX_FLAGS)
 	@echo QEMU_FLAGS: $(QEMU_FLAGS)
 	@echo as: $(S_src)
 	@echo c: $(c_src)
+	@echo cpp: $(cpp_src)
 	@echo headers: $(headers)
 	@echo obj: $(obj)
 	@echo prod: $(prod)
