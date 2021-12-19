@@ -28,7 +28,7 @@ CC_FLAGS += $(addprefix -I,$(INCLUDE)) -include default.h
 CC_DEBUG_FLAGS = -g -DDEBUG
 
 CXX = arm-none-eabi-g++
-CXX_FLAGS = -Wall -O2 -c -Wextra -ffreestanding -Wno-override-init
+CXX_FLAGS = -Wall -O2 -c -Wextra -ffreestanding
 CXX_FLAGS += $(addprefix -I,$(INCLUDE)) -include default.h
 CXX_DEBUG_FLAGS = -g -DDEBUG
 
@@ -56,8 +56,8 @@ src_dirs = apps drivers libs fluff kernel
 #lds := $(addprefix boards/$(platform),$(lds))
 
 # load general sources
-headers += $(shell find $(src_dirs) -name '*.h')
-hppeaders += $(shell find $(src_dirs) -name '*.h')
+headers += $(shell find $(src_dirs) -name '*.h' -name '*.hpp')
+#hppeaders += $(shell find $(src_dirs) -name '*.h')
 c_src += $(shell find $(src_dirs) -name '*.c')
 cpp_src += $(shell find $(src_dirs) -name '*.cpp')
 S_src += $(shell find $(src_dirs) -name '*.S')
@@ -121,7 +121,7 @@ $(c_obj): $(build_dir)/%.o: %.c $(headers)
 	@mkdir -p $(@D)
 	$(CC) -o $@ $(CC_FLAGS) $<
 
-$(cpp_obj): $(build_dir)/%.o: %.cpp $(headers) $(hppeaders)
+$(cpp_obj): $(build_dir)/%.o: %.cpp $(headers)
 	@mkdir -p $(@D)
 	$(CXX) -o $@ $(CXX_FLAGS) $<
 
@@ -145,7 +145,7 @@ debugger:
 	gdb-multiarch $(if $(debug_load),,-s) $(build_dir)/kernel.elf -ex "target remote $(debug_target)" -ex "layout split" $(if $(debug_load), --ex "load")
 
 wordcount:
-	cat $(S_src) $(c_src) $(headers) $(hppeaders) | wc
+	cat $(S_src) $(c_src) $(headers) | wc
 
 clean:
 	rm -rf $(build_dir)
