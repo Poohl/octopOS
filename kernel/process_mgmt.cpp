@@ -62,7 +62,7 @@ void init_process_mgmt() {
 	new_thread("idle", &idle_args);
 }
 
-int new_thread(char* name, init_thread_state_args* args) {
+int new_thread(const char* name, init_thread_state_args* args) {
 	uint* id_p = tcb_free_q.pop();
 	if (!id_p) return -1;
 	int id = *id_p;
@@ -76,7 +76,7 @@ int new_thread(char* name, init_thread_state_args* args) {
 	return id;
 }
 
-int new_thread_raw(char* name, cpu_context* init_state, bool may_be_sys) {
+int new_thread_raw(const char* name, cpu_context* init_state, bool may_be_sys) {
 	if (!cpu_context_validate(init_state, may_be_sys)) return -2;
 	uint* id_p = tcb_free_q.pop();;
 	if (!id_p) return -1;
