@@ -52,9 +52,9 @@ void cpu_context_init(cpu_context* dest, const init_thread_state_args* src) {
 	memset(dest, sizeof(*dest), 0);
 	memcpy(&dest->registers, &src->args, sizeof(src->args));
 	memset(&dest->registers[ARR_LEN(src->args)], 0, sizeof(dest->registers) - sizeof(src->args));
-	dest->pc = src->start;
-	dest->lr = src->exit;
-	dest->sp = src->stack + (src->stack_size >> 2);
+	dest->pc = (u32) src->start;
+	dest->lr = (u32) src->exit;
+	dest->sp = (u32) (src->stack + (src->stack_size >> 2));
 	u32 tmp;
 	asm ("mrs %0, cpsr" : "=r" (tmp) : :);
 	// clear mode & interrupt mask
@@ -68,7 +68,7 @@ bool cpu_context_validate(cpu_context* dest, bool may_be_sys) {
 	// either you are allowed anything or you are user with interrupts
 	return may_be_sys ||
 		(
-			(dest->cpsr & CPSR_FLAG_MODE_MASK == MODE_USR)
+			((dest->cpsr & CPSR_FLAG_MODE_MASK) == MODE_USR)
 		&& !(dest->cpsr & (CPSR_FLAG_IRQ | CPSR_FLAG_FIRQ))
 		)
 	;
@@ -76,9 +76,9 @@ bool cpu_context_validate(cpu_context* dest, bool may_be_sys) {
 
 void swap(cpu_context* curr, u32* hw_context, cpu_context* next) {
 
-	printf("Swap status words:\r\n");
-	printf_cpsr(curr->cpsr);
-	printf_cpsr(next->cpsr);
+	//printf("Swap status words:\r\n");
+	//printf_cpsr(curr->cpsr);
+	//printf_cpsr(next->cpsr);
 
 	// save r0-12, lr as pc
 	memcpy(curr, hw_context, sizeof(curr->registers) + sizeof(u32));

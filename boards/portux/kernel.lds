@@ -5,6 +5,9 @@ SECTIONS
 	.vectors : { *(.vectors) }
 	.init : { *(.init) }
 	.text : { *(.text) }
+
+	/* fixing gcc's gambling problem */
+	.text.unlikely : { *(.text.unlikely) }
 	
 	/* ahh, yes. The empty & unused section ld is in love with */
 	.COMMON : { *(COMMON)}

@@ -22,9 +22,9 @@ typedef struct{
 
 void init_process_mgmt();
 
-int new_thread(char* name, init_thread_state_args* args);
+int new_thread(const char* name, init_thread_state_args* args);
 
-int new_thread_raw(char* name, cpu_context* init_state, bool may_be_sys);
+int new_thread_raw(const char* name, cpu_context* init_state, bool may_be_sys);
 
 void exit();
 
@@ -34,8 +34,8 @@ void thread_swap_callback(u32* context);
 	.start = NULL, \
 	.exit = &exit, \
 	.stack = NULL, \
-	.stack_size = 1 << 11, \
 	.args = {0}, \
+	.stack_size = 1 << 11, \
 	.is_sys=false \
 }
 

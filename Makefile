@@ -27,6 +27,11 @@ CC_FLAGS = -Wall -O2 -c -Wextra -ffreestanding -Wno-override-init -std=gnu17
 CC_FLAGS += $(addprefix -I,$(INCLUDE)) -include default.h
 CC_DEBUG_FLAGS = -g -DDEBUG
 
+CXX = arm-none-eabi-g++
+CXX_FLAGS = -Wall -O2 -c -Wextra -ffreestanding
+CXX_FLAGS += $(addprefix -I,$(INCLUDE)) -include default.h
+CXX_DEBUG_FLAGS = -g -DDEBUG
+
 LD = arm-none-eabi-ld
 LD_PRE_FLAGS =
 LD_DEBUG_PRE_FLAGS = 
@@ -51,8 +56,10 @@ src_dirs = apps drivers libs fluff kernel
 #lds := $(addprefix boards/$(platform),$(lds))
 
 # load general sources
-headers += $(shell find $(src_dirs) -name '*.h')
+headers += $(shell find $(src_dirs) -name '*.h' -name '*.hpp')
+#hppeaders += $(shell find $(src_dirs) -name '*.h')
 c_src += $(shell find $(src_dirs) -name '*.c')
+cpp_src += $(shell find $(src_dirs) -name '*.cpp')
 S_src += $(shell find $(src_dirs) -name '*.S')
 
 # load platform specific config and sources
@@ -60,7 +67,7 @@ board_dir := boards/$(platform)
 include $(board_dir)/Makefile
 
 # load list of things to produce
-obj += $(c_src:.c=.o) $(S_src:.S=.o)
+obj += $(c_src:.c=.o) $(S_src:.S=.o) $(cpp_src:.cpp=.o)
 prod += kernel.elf
 dumps += $(obj:.o=.list) $(prod:.elf=.list)
 
@@ -72,16 +79,21 @@ prod := $(addprefix $(build_dir)/,$(prod))
 # workaround for pattern matching ideosyncracy
 c_obj:=$(shell find . -name '*.c')
 S_obj:=$(shell find . -name '*.S')
+cpp_obj:=$(shell find . -name '*.cpp')
 c_obj:= $(c_obj:.c=.o)
 S_obj:= $(S_obj:.S=.o)
+cpp_obj:= $(cpp_obj:.cpp=.o)
 c_obj:= $(addprefix $(build_dir)/,$(c_obj))
 S_obj:= $(addprefix $(build_dir)/,$(S_obj))
+cpp_obj:= $(addprefix $(build_dir)/,$(cpp_obj))
 # 50% of the guys writing this shite were actually monkeys
 # what would you expect path-truncate to do for nonexistant files?
 #c_obj:= $(realpath $(c_obj))
 #S_obj:= $(realpath $(S_obj))
+
 c_obj:= $(subst ./,,$(c_obj))
 S_obj:= $(subst ./,,$(S_obj))
+cpp_obj:= $(subst ./,,$(cpp_obj))
 
 ifeq ($(build), debug)
 AS_FLAGS += $(AS_DEBUG_FLAGS)
@@ -89,11 +101,13 @@ CC_FLAGS += $(CC_DEBUG_FLAGS)
 LD_PRE_FLAGS += $(LD_DEBUG_PRE_FLAGS)
 LD_POST_FLAGS += $(LD_DEBUG_POST_FLAGS)
 QEMU_FLAGS += $(QEMU_DEBUG_FLAGS)
+CXX_FLAGS += $(CXX_DEBUG_FLAGS)
 endif
 
 _all: $(prod) $(dumps)
 	@echo as: $(S_src)
 	@echo c: $(c_src)
+	@echo cpp: $(cpp_src)
 	@echo headers: $(headers)
 	@echo obj: $(obj)
 	@echo prod: $(prod)
@@ -106,6 +120,10 @@ $(S_obj): $(build_dir)/%.o: %.S
 $(c_obj): $(build_dir)/%.o: %.c $(headers)
 	@mkdir -p $(@D)
 	$(CC) -o $@ $(CC_FLAGS) $<
+
+$(cpp_obj): $(build_dir)/%.o: %.cpp $(headers)
+	@mkdir -p $(@D)
+	$(CXX) -o $@ $(CXX_FLAGS) $<
 
 # this assumes the output is always called kernel.elf
 $(build_dir)/kernel.elf: $(obj) $(lds)
@@ -139,12 +157,15 @@ dependencies:
 make_var_test:
 	@echo c_obj: $(c_obj)
 	@echo S_obj: $(S_obj)
+	@echo cpp_obj: $(cpp_obj)
 	@echo build_dir: $(build_dir)
 	@echo CC_FLAGS: $(CC_FLAGS)
 	@echo AS_FLAGS: $(AS_FLAGS)
+	@echo CXX_FLAGS: $(CXX_FLAGS)
 	@echo QEMU_FLAGS: $(QEMU_FLAGS)
 	@echo as: $(S_src)
 	@echo c: $(c_src)
+	@echo cpp: $(cpp_src)
 	@echo headers: $(headers)
 	@echo obj: $(obj)
 	@echo prod: $(prod)
