@@ -91,8 +91,9 @@ void dbgu_interupt_callback() {
 		args.args[0] = dbgu->rx;
 		args.is_sys = true;
 		args.stack_size = 0x100;
-		char name[] = {'T', 'e', 's', 't', ' ', (char) args.args[0]};
-		new_thread(name, &args);
+		char name[] = {'T', 'e', 's', 't', ' ', (char) args.args[0], 0};
+		if (new_thread(name, &args) < 0)
+			printf("Error creating thread %s\r\n", name);
 	}
 	if (status & STATUS_TX_READY) {
 		byte* out = send_buff.pop();
@@ -120,7 +121,7 @@ uint dbgu_read_async(uint len, byte* dest) {
 }
 
 uint dbgu_async_read_flush() {
-	uint out = recv_buff.get_space();
+	uint out = recv_buff.get_free();
 	recv_buff = LoopQueue<byte, 256>();
 	return out;
 }
@@ -136,7 +137,7 @@ void printyprint() {
 }
 
 byte get_recvbuff_head() {
-	while (recv_buff.get_space() == 0) asm("":::"memory"); // DON'T TOUCH THIS OR IT BREAKS!!!
+	while (recv_buff.get_free() == 0) asm("":::"memory"); // DON'T TOUCH THIS OR IT BREAKS!!!
 	return *recv_buff.pop();
 }
 

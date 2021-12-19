@@ -12,8 +12,11 @@ template <typename T, uint size> class LoopQueue {
 		LoopQueue() {
 			fill = read = 0;
 		}
-		uint get_space() {
+		uint get_free() {
 			return size - fill;
+		}
+		uint get_full() {
+			return fill;
 		}
 		uint push(const T* data, uint len) {
 			uint i;
@@ -21,7 +24,7 @@ template <typename T, uint size> class LoopQueue {
 			return i;
 		}
 		bool push(T elem) {
-			bool out = get_space() > 0;
+			bool out = get_free() > 0;
 			if (out)
 				buffer[(read + fill++) % size] = elem;
 			return out;

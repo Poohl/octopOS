@@ -76,9 +76,9 @@ bool cpu_context_validate(cpu_context* dest, bool may_be_sys) {
 
 void swap(cpu_context* curr, u32* hw_context, cpu_context* next) {
 
-	printf("Swap status words:\r\n");
-	printf_cpsr(curr->cpsr);
-	printf_cpsr(next->cpsr);
+	//printf("Swap status words:\r\n");
+	//printf_cpsr(curr->cpsr);
+	//printf_cpsr(next->cpsr);
 
 	// save r0-12, lr as pc
 	memcpy(curr, hw_context, sizeof(curr->registers) + sizeof(u32));

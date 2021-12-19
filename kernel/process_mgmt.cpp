@@ -1,11 +1,28 @@
-
+extern "C" {
+#include "default.h"
 #include "drivers/cpu.h"
 #include "process_mgmt.h"
 #include "libs/printf.h"
-
+#include "libs/hardware.h"
+}
+#include "libs/loop_queue.hpp"
 #define DEAD	0
 #define ALIVE	1
 #define ZOMBIE	2
+
+#define NUM_THREADS 16
+
+__attribute__((weak)) void *memset(void *s, int c, size_t n) {
+	for (size_t i = 0; i < n; ++i)
+		((byte*) s)[i] = c;
+	return s;
+}
+
+__attribute__((weak)) void *memcpy(void *dest, void const *src, size_t n) {
+	for (size_t i = 0; i < n; ++i)
+		((byte*) dest)[i] = ((byte*) src)[i];
+	return dest;
+}
 
 typedef struct {
 	uint id;
@@ -14,41 +31,12 @@ typedef struct {
 	cpu_context context;
 } tcb;
 
-typedef struct {
-	int buff[16];
-	int available;
-	int next;
-} tcb_queue;
+uint current;
 
-uint current = 0;
+tcb processes[NUM_THREADS];
+LoopQueue<uint, NUM_THREADS> tcb_free_q;
 
-tcb processes[16];
-tcb_queue tcbq;
-
-void init_tcb_queue(tcb_queue* q) {
-	for (int i = 0; i < 16; ++i)
-		q->buff[i] = i;
-	q->available = 15;
-	q->next = 0;
-}
-
-int get_tcb_slot(tcb_queue* q){
-	if (q->available > 0) {
-		int ret = q->buff[q->next];
-		q->available --;
-		q->next = q->next + 1 & 0xf;
-		return ret;
-	} else {
-		return -1;
-	}
-}
-
-void release_tcb_slot(tcb_queue* q, int slt) {
-	q->buff[q->next + q->available & 0xf] = slt;
-	q->available++;
-}
-
-void idle() {
+extern "C" void idle() {
 	while (1)
 		tight_powersave();
 }
@@ -59,10 +47,12 @@ void exit() {
 }
 
 void init_process_mgmt() {
-	init_tcb_queue(&tcbq);
-	current = 1;
 	memset(processes, 0, sizeof(processes));	// clear tcb-array from ghosts
-	
+	current = 0;
+	for (int i = 0; i < NUM_THREADS; ++i) {
+		tcb_free_q.push(i);
+		processes[i].id = i;
+	}
 	init_thread_state_args idle_args = default_init_thread_state_args;
 	idle_args.stack = &processes[0].context.registers;
 	idle_args.start = &idle;
@@ -73,21 +63,24 @@ void init_process_mgmt() {
 }
 
 int new_thread(char* name, init_thread_state_args* args) {
-	int id = get_tcb_slot(&tcbq);
-	if (id < 0) return -1;
+	uint* id_p = tcb_free_q.pop();
+	if (!id_p) return -1;
+	int id = *id_p;
 	cpu_context_init(&processes[id].context, args);
 	processes[id].name[7] = 0;
 	memcpy(&processes[id].name, name, 7);
 	processes[id].id = id;
 	processes[id].state = ALIVE;
 	printf("created thread with id %x\n", id);
+	printf("tcb queue fill:%x\r\n", tcb_free_q.get_full());
 	return id;
 }
 
 int new_thread_raw(char* name, cpu_context* init_state, bool may_be_sys) {
 	if (!cpu_context_validate(init_state, may_be_sys)) return -2;
-	int id = get_tcb_slot(&tcbq);
-	if (id < 0) return -1;
+	uint* id_p = tcb_free_q.pop();;
+	if (!id_p) return -1;
+	int id = *id_p;
 	memcpy(&processes[id].context, init_state, sizeof(cpu_context));
 	processes[id].name[7] = 0;
 	memcpy(&processes[id].name, name, 7);
@@ -97,13 +90,13 @@ int new_thread_raw(char* name, cpu_context* init_state, bool may_be_sys) {
 
 void thread_swap_callback(u32* context) {
 	uint next;
-	for (next = current + 1; next != current; next = next + 1 & 0xF) {
+	for (next = (current + 1) % NUM_THREADS; next != current; next = (next + 1) % NUM_THREADS) {
 		if (processes[next].state == ALIVE && next != 0)
 			break;
 
 		// get your chainsaw and your shotgun cause we're going on a zombie-hunt
 		if (processes[next].state == ZOMBIE) {
-			release_tcb_slot(&tcbq, processes[next].id);
+			tcb_free_q.push(processes[next].id);
 			processes[next].state = DEAD;
 			printf("BOOM! -> %x\n", processes[next].id);
 		}
@@ -111,17 +104,7 @@ void thread_swap_callback(u32* context) {
 	if (next == current) {
 		next = 0;
 	}
-	printf("Swap from slot %x to %x", current, next);
+	printf("Swap from slot %x to %x\r\n", current, next);
 	swap(&processes[current].context, context, &processes[next].context);
 	current = next;
-	print_q(&tcbq);
-}
-
-void print_q(tcb_queue* q) {
-	printf("### Q:\n");
-	printf("av: %x\n",q->available);
-	for (int i = 0; i < 16; ++i)
-		printf("%x, ", q->buff[i]);
-	printf("\nnx: %x\n",q->next);
-	printf("######\n");
 }
