@@ -88,8 +88,10 @@ void dbgu_interupt_callback() {
 		args.args[0] = dbgu->rx;
 		args.is_sys = true;
 		args.stack_size = 0x100;
-		char name[] = {'T', 'e', 's', 't', ' ', (char) args.args[0]};
-		new_thread(name, &args);
+		char name[] = {'T', 'e', 's', 't', ' ', (char) args.args[0], 0};
+		if (new_thread(name, &args) < 0)
+			printf("Error creating thread %s\r\n", name);
+
 	}
 	if (status & STATUS_TX_READY) {
 		int out = blq_pop(&send_buff);
