@@ -1,5 +1,4 @@
 extern "C" {
-#include "default.h"
 #include "drivers/cpu.h"
 #include "process_mgmt.h"
 #include "libs/printf.h"
@@ -11,18 +10,6 @@ extern "C" {
 #define ZOMBIE	2
 
 #define NUM_THREADS 16
-
-__attribute__((weak)) void *memset(void *s, int c, size_t n) {
-	for (size_t i = 0; i < n; ++i)
-		((byte*) s)[i] = c;
-	return s;
-}
-
-__attribute__((weak)) void *memcpy(void *dest, void const *src, size_t n) {
-	for (size_t i = 0; i < n; ++i)
-		((byte*) dest)[i] = ((byte*) src)[i];
-	return dest;
-}
 
 typedef struct {
 	uint id;

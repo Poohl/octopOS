@@ -29,7 +29,7 @@ CC_DEBUG_FLAGS = -g -DDEBUG
 
 CXX = arm-none-eabi-g++
 CXX_FLAGS = -Wall -O2 -c -Wextra -ffreestanding
-CXX_FLAGS += $(addprefix -I,$(INCLUDE)) -include default.h
+CXX_FLAGS += $(addprefix -I,$(INCLUDE)) -include default.hpp
 CXX_DEBUG_FLAGS = -g -DDEBUG
 
 LD = arm-none-eabi-ld
