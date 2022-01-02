@@ -2,6 +2,7 @@
 #include "drivers/cpu.h"
 #include "process_mgmt.h"
 #include "libs/printf.h"
+#include "syscalls.h"
 
 #define DEAD	0
 #define ALIVE	1
@@ -53,9 +54,11 @@ void idle() {
 		tight_powersave();
 }
 
-void exit() {
-	processes[current].state = ZOMBIE;
-	idle();
+void exit(u32* hw_context) {
+	// Don't call tis directly frem kernel... Why would you?
+	// if (current.open_handles == 0)
+	processes[current].state = DEAD;
+	thread_swap_callback(hw_context);
 }
 
 void init_process_mgmt() {

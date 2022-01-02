@@ -34,6 +34,8 @@ static const char* exception_fmt[] = {
 	"Illegal code access to %p, extra data %p\r\n",
 	"Illegal instruction at %p, instruction %p\r\n",
 	"During %p: Unhandeled interrupt %p\r\n",
+	"From %p: Undefined syscall %p\r\n",
+	"From %p: Illegal syscall%p\r\n",
 	"Unknown exception at %p, additional info: %p\r\n"
 };
 

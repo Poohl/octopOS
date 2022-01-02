@@ -1,6 +1,7 @@
 
 #include "dbgu.h"
 
+#include "kernel/syscalls.h"
 #include "default.h"
 #include "board.h"
 #include "libs/hardware.h"
@@ -73,7 +74,7 @@ int debug_get_char() {
 
 static void slow_print(char c) {
 	for (int i = 0; i < c; ++i) {
-		debug_put_char(c);
+		sys_debug_put_char(c);
 		for (int j = 0; j < 10000000; ++j)
 			asm volatile("" : : :);
 	}

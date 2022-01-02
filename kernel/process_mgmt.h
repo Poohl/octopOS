@@ -11,7 +11,8 @@ typedef struct _ccccccc cpu_context;
 #include "default.h"
 #include "drivers/cpu.h"
 
-typedef struct{
+// WORDS CANNOT DESCRIBE HOW MUCH I HATE THE GCC PIPLINE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+typedef struct _init_thread_state_args {
 	void_void_func_ptr start;
 	void_void_func_ptr exit;
 	void* stack;
@@ -26,13 +27,13 @@ int new_thread(char* name, init_thread_state_args* args);
 
 int new_thread_raw(char* name, cpu_context* init_state, bool may_be_sys);
 
-void exit();
+void exit(u32* hw_context);
 
 void thread_swap_callback(u32* context);
 
 #define default_init_thread_state_args { \
 	.start = NULL, \
-	.exit = &exit, \
+	.exit = &sys_exit, \
 	.stack = NULL, \
 	.stack_size = 1 << 11, \
 	.args = {0}, \

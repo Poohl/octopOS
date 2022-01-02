@@ -60,12 +60,23 @@
 
 typedef u32 default_instruction;
 
-#define enable_interrupts() \
-	asm volatile ( \
-		"MRS r0,CPSR\n" \
-		"BIC r0,r0,#0b11000000\n" \
-		"MSR cpsr, r0\n" \
-		: : : "r0", "memory")
+#define enable_interrupts() { \
+		u32 tmp; \
+		asm volatile ( \
+			"MRS %0,CPSR\n" \
+			"BIC %0,r0,#0b11000000\n" \
+			"MSR cpsr, %0\n" \
+			: "=&r" (tmp) : : "memory"); \
+	}
+
+#define disable_interrupts() { \
+		u32 tmp; \
+		asm volatile ( \
+			"MRS %0,CPSR\n" \
+			"ORR %0,r0,#0b11000000\n" \
+			"MSR cpsr, %0\n" \
+			: "=&r" (tmp) : : "memory"); \
+	}
 
 #endif
 

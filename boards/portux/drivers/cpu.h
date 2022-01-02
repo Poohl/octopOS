@@ -17,7 +17,7 @@ typedef struct _ccccccc {
 	u32 cpsr;
 } cpu_context;
 
-void cpu_context_init(cpu_context* dest, const init_thread_state_args* src);
+void cpu_context_init(cpu_context* dest, const struct _init_thread_state_args* src);
 
 bool cpu_context_validate(cpu_context* dest, bool may_be_sys);
 
