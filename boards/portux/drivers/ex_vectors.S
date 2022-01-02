@@ -129,12 +129,36 @@ bl  exception_handler
 // mov lr, r0
 ldm sp!, {r0-r12, pc}^
 
+#define SYSCALLS 4
+#define SYSCALLS_W_CONTEXT 1
+
 .global SWI
-SWI:
-push {r0-r12, lr}
-mov r1, lr
-add r1, r1, #-4 
-ldr r2, [r1]
-bl  syscall_handler
-// mov lr, r0
+/* C AAPCS (almost, consider this a function-prolouge)
+ * if the syscall has the lowest bit set, it's not thumb, it means it'll get the context in r0
+ */
+SWI: 
+push {lr}
+
+// get the syscall number from the instruction
+ldr ip, [lr, #-4]
+and ip, ip, #0x00FFFFFF
+// load the routine
+cmp ip, #(SYSCALLS + 1)
+ldr lr, =syscall_table
+ldrhs ip, =unhandled_syscall
+ldrlo ip, [lr, ip, LSL#2] // syscall_table + idx * 4
+tst ip, #1
+pushne {r0-r12}
+movne r0, sp
+ldreq lr, =SWI_quick_ret
+ldrne lr, =SWI_context_ret
+bic pc, ip, #1
+
+SWI_quick_ret:
+and r1, r1, #0
+and r2, r2, #0
+and r3, r3, #0
+ldm sp!, {pc}^
+
+SWI_context_ret:
 ldm sp!, {r0-r12, pc}^

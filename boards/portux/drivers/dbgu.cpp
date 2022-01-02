@@ -8,6 +8,7 @@ extern "C" {
 #include "cpu.h"
 #include "kernel/process_mgmt.h"
 #include "libs/printf.h"
+#include "kernel/syscalls.h"
 }
 #include "libs/loop_queue.hpp"
 
@@ -76,7 +77,7 @@ int debug_get_char() {
 
 static void slow_print(char c) {
 	for (int i = 0; i < c; ++i) {
-		debug_put_char(c);
+		sys_debug_put_char(c);
 		for (int j = 0; j < 10000000; ++j)
 			asm volatile("" : : :);
 	}

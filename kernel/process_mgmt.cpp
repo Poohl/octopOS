@@ -3,6 +3,7 @@ extern "C" {
 #include "process_mgmt.h"
 #include "libs/printf.h"
 #include "libs/hardware.h"
+#include "syscalls.h"
 }
 #include "libs/loop_queue.hpp"
 #define DEAD	0
@@ -28,9 +29,11 @@ extern "C" void idle() {
 		tight_powersave();
 }
 
-void exit() {
-	processes[current].state = ZOMBIE;
-	idle();
+void exit(u32* hw_context) {
+	// Don't call tis directly frem kernel... Why would you?
+	// if (current.open_handles == 0)
+	processes[current].state = DEAD;
+	thread_swap_callback(hw_context);
 }
 
 void init_process_mgmt() {

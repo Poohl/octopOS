@@ -39,6 +39,8 @@ int set_timer_interval(uint period);
 #define EXCEPTION_ILLEGAL_CODE 2
 #define EXCEPTION_ILLEGAL_INST 3
 #define EXCEPTION_UNEXPECTED_ISR 4
+#define EXCEPTION_UNKNOWN_SYSCALL 5
+#define EXCEPTION_ILLEGAL_SYSCALL 6
 
 #ifndef __ASSEMBLER__
 
