@@ -1,5 +1,4 @@
 
-#include "process_mgmt.h"
 #include "default.h"
 #include "libs/hardware.h"
 
@@ -21,15 +20,10 @@ void_void_func_ptr syscall_table[SYSCALLS];
 #pragma GCC diagnostic ignored "-Wreturn-type"
 
 
-void init_syscalls() {
-	void_void_func_ptr init[] = {
-		interrupt_context(&exit),
-		&new_thread,
-		&new_thread_raw,
-		&debug_put_char,
-		&debug_get_char,
-	};
-	memcpy(syscall_table, init, sizeof(init));
+void init_syscalls(void_void_func_ptr syscall_init[SYSCALLS]) {
+	// fun fact: sizeof(syscall_init) is 4, sizeof(syscall_table) is 4*SYSCALLS
+	// Why? because gcc devs live in houses with opaque windows.
+	memcpy(syscall_table, syscall_init, sizeof(syscall_table));
 }
 
 void unhandled_syscall(u32 a, u32 b, u32 c, u32 d) {
@@ -42,12 +36,12 @@ void sys_exit() {
 }
 
 __attribute__ ((noinline))
-void sys_new_thread(char* name,  init_thread_state_args* args) {
+void sys_new_thread(char* name,  void* args) {
 	do_syscall(1);
 }
 
 __attribute__ ((noinline))
-void sys_restore_thread(char* name,  cpu_context* context) {
+void sys_restore_thread(char* name,  void* context) {
 	do_syscall(2);
 }
 

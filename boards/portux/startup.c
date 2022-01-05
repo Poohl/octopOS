@@ -21,6 +21,9 @@ extern void init_stacks();
 
 extern void system_interrupt_hand();
 
+#define syscall_context(X) \
+	(void_void_func_ptr) (((uint) (X)) | 1)
+
 /* MAIN */
 void c_entry(void) {
 	/* init  */
@@ -34,7 +37,17 @@ void c_entry(void) {
 	asm("mrs %0, cpsr" :  "=r" (buff) : : );
 	printf_cpsr(buff);
 	init_process_mgmt();
-	init_syscalls();
+
+	// this is bad. Like really bad. but the alternitive is cyclic includes.
+	void_void_func_ptr syscall_init[] = {
+		syscall_context(&exit),
+		&new_thread,
+		&new_thread_raw,
+		&debug_put_char,
+		&debug_get_char,
+		NULL
+	};
+	init_syscalls(syscall_init);
 
 	enable_interrupts();
 
