@@ -131,3 +131,15 @@ void swap(cpu_context* curr, u32* hw_context, cpu_context* next) {
 	// to create new threads, just zero this out.
 	// or be friendly and put a call to exit into the lr
 }
+
+void set_return_values(cpu_context* dest, u32* values, uint count) {
+	switch (count) {
+		default:
+		case 2:
+			dest->registers[1] = values[1];
+		case 1:
+			dest->registers[0] = values[0];
+		case 0:
+			break;
+	}
+}
