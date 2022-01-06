@@ -7,6 +7,7 @@
 #define DEAD	0
 #define ALIVE	1
 #define ZOMBIE	2
+#define BLOCKED	3
 
 typedef struct {
 	uint id;
@@ -22,6 +23,8 @@ typedef struct {
 } tcb_queue;
 
 uint current;
+
+uint real_alive_threads;
 
 tcb processes[16];
 tcb_queue tcbq;
@@ -50,6 +53,7 @@ void release_tcb_slot(tcb_queue* q, int slt) {
 }
 
 void idle() {
+	set_timer_interval(0);
 	while (1)
 		tight_powersave();
 }
@@ -58,6 +62,8 @@ void exit(u32* hw_context) {
 	// Don't call tis directly frem kernel... Why would you?
 	// if (current.open_handles == 0)
 	processes[current].state = DEAD;
+	if (--real_alive_threads == 1)
+		set_timer_interval(0);
 	thread_swap_callback(hw_context);
 }
 
@@ -73,6 +79,18 @@ void init_process_mgmt() {
 	idle_args.is_sys = true;
 	idle_args.stack_size = sizeof(processes[0].context.registers);
 	new_thread("idle", &idle_args);
+	real_alive_threads = 0;
+}
+
+static int internal_new_thread_finalizer(char* name, int id) {
+	processes[id].name[7] = 0;
+	memcpy(&processes[id].name, name, 7);
+	processes[id].id = id;
+	processes[id].state = ALIVE;
+	printf("created thread with id %x\n", id);
+	if (++real_alive_threads == 2)
+		set_timer_interval(10000);
+	return id;
 }
 
 int new_thread(char* name, init_thread_state_args* args) {
@@ -81,12 +99,7 @@ int new_thread(char* name, init_thread_state_args* args) {
 	if (!args->stack)
 		args->stack = PROCESS_STACKS - (id - 1) * 0x5000;
 	cpu_context_init(&processes[id].context, args);
-	processes[id].name[7] = 0;
-	memcpy(&processes[id].name, name, 7);
-	processes[id].id = id;
-	processes[id].state = ALIVE;
-	printf("created thread with id %x\n", id);
-	return id;
+	return internal_new_thread_finalizer(name, id);
 }
 
 int new_thread_raw(char* name, cpu_context* init_state, bool may_be_sys) {
@@ -94,10 +107,7 @@ int new_thread_raw(char* name, cpu_context* init_state, bool may_be_sys) {
 	int id = get_tcb_slot(&tcbq);
 	if (id < 0) return -1;
 	memcpy(&processes[id].context, init_state, sizeof(cpu_context));
-	processes[id].name[7] = 0;
-	memcpy(&processes[id].name, name, 7);
-	processes[id].state = ALIVE;
-	return id;
+	return internal_new_thread_finalizer(name, id);
 }
 
 /**
@@ -124,6 +134,24 @@ void thread_swap_callback(u32* context) {
 	swap(&processes[current].context, context, &processes[next].context);
 	current = next;
 	//print_q(&tcbq);
+}
+
+void block_current(u32* hw_context) {
+	processes[current].state = BLOCKED;
+	if (--real_alive_threads == 1)
+		set_timer_interval(0);
+	thread_swap_callback(hw_context);
+}
+
+void unblock(uint id) {
+	if (++real_alive_threads == 2)
+		set_timer_interval(10000);
+	processes[current].state = ALIVE;
+}
+
+void unblock_now(uint id, u32* hw_context) {
+	unblock(id);
+	swap(&processes[current], hw_context, &processes[id]);
 }
 
 void print_q(tcb_queue* q) {
