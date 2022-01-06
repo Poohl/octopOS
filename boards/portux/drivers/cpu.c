@@ -52,9 +52,9 @@ void cpu_context_init(cpu_context* dest, const init_thread_state_args* src) {
 	memset(dest, sizeof(*dest), 0);
 	memcpy(&dest->registers, &src->args, sizeof(src->args));
 	memset(&dest->registers[ARR_LEN(src->args)], 0, sizeof(dest->registers) - sizeof(src->args));
-	dest->pc = src->start;
-	dest->lr = src->exit;
-	dest->sp = src->stack + (src->stack_size >> 2);
+	dest->pc = (u32) src->start;
+	dest->lr = (u32) src->exit;
+	dest->sp = (u32) (src->stack) + (src->stack_size >> 2);
 	u32 tmp;
 	asm ("mrs %0, cpsr" : "=r" (tmp) : :);
 	// clear mode & interrupt mask
@@ -68,7 +68,7 @@ bool cpu_context_validate(cpu_context* dest, bool may_be_sys) {
 	// either you are allowed anything or you are user with interrupts
 	return may_be_sys ||
 		(
-			(dest->cpsr & CPSR_FLAG_MODE_MASK == MODE_USR)
+			((dest->cpsr & CPSR_FLAG_MODE_MASK) == MODE_USR)
 		&& !(dest->cpsr & (CPSR_FLAG_IRQ | CPSR_FLAG_FIRQ))
 		)
 	;
@@ -137,8 +137,10 @@ void set_return_values(cpu_context* dest, u32* values, uint count) {
 		default:
 		case 2:
 			dest->registers[1] = values[1];
+			/* fallthrough */
 		case 1:
 			dest->registers[0] = values[0];
+			/* fallthrough */
 		case 0:
 			break;
 	}

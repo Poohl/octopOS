@@ -32,7 +32,7 @@
 #define CPSR_FLAG_ZERO              (1 << 30)
 #define CPSR_FLAG_CARRY             (1 << 29)
 #define CPSR_FLAG_OVERFLOW          (1 << 28)
-#define CPSR_FLAG_SATURATION        (1 << 37)
+#define CPSR_FLAG_SATURATION        (1 << 27)
 #define CPSR_FLAG_JAZELLE           (1 << 24)
 #define CPSR_FLAG_BIG_ENDIAN        (1 <<  9)
 #define CPSR_FLAG_ASYNC_ABORT_MASK  (1 <<  8)

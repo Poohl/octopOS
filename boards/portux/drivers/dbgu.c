@@ -85,7 +85,7 @@ void dbgu_interupt_callback() {
 	if (status & STATUS_RX_READY) {
 		//blq_push(&recv_buff, dbgu->rx);
 		init_thread_state_args args = default_init_thread_state_args;
-		args.start = slow_print;
+		args.start = (void_void_func_ptr) slow_print;
 		args.args[0] = dbgu->rx;
 		args.is_sys = true;
 		args.stack_size = 0x100;

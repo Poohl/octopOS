@@ -8,7 +8,7 @@
 
 #define SYSCALLS 6
 
-void init_syscalls(void_void_func_ptr syscall_init[SYSCALLS]);
+void init_syscalls();
 
 void unhandled_syscall(u32 a, u32 b, u32 c, u32 d);
 

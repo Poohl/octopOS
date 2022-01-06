@@ -25,7 +25,7 @@ volatile aic* _aic;
 
 __attribute__((interrupt ("IRQ")))
 static void undef_interrupt_hand() {
-	exception_handler(EXCEPTION_UNEXPECTED_ISR, NULL, ((aic*) AIC)->status);
+	exception_handler(EXCEPTION_UNEXPECTED_ISR, NULL, (void*) (((aic*) AIC)->status));
 	_aic->signal_end = 1;
 	_aic->clear = 1 << _aic->status;
 	acknowledge_interrupt();

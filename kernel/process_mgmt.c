@@ -62,6 +62,7 @@ void exit(u32* hw_context) {
 	// Don't call tis directly frem kernel... Why would you?
 	// if (current.open_handles == 0)
 	processes[current].state = DEAD;
+	release_tcb_slot(&tcbq, current);
 	if (--real_alive_threads == 1)
 		set_timer_interval(0);
 	thread_swap_callback(hw_context);
@@ -97,7 +98,7 @@ int new_thread(char* name, init_thread_state_args* args) {
 	int id = get_tcb_slot(&tcbq);
 	if (id < 0) return -1;
 	if (!args->stack)
-		args->stack = PROCESS_STACKS - (id - 1) * 0x5000;
+		args->stack = (void*) (PROCESS_STACKS - (id - 1) * 0x5000);
 	cpu_context_init(&processes[id].context, args);
 	return internal_new_thread_finalizer(name, id);
 }
@@ -146,12 +147,13 @@ void block_current(u32* hw_context) {
 void unblock(uint id) {
 	if (++real_alive_threads == 2)
 		set_timer_interval(10000);
-	processes[current].state = ALIVE;
+	processes[id].state = ALIVE;
 }
 
 void unblock_now(uint id, u32* hw_context) {
 	unblock(id);
-	swap(&processes[current], hw_context, &processes[id]);
+	swap(&processes[current].context, hw_context, &processes[id].context);
+	current = id;
 }
 
 void print_q(tcb_queue* q) {

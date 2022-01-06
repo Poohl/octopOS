@@ -47,6 +47,7 @@ int set_next_timer_interval(uint delay) {
 	} else {
 		next_period = st->interval_mode | 0x10000;
 		st->interval_mode = delay;
+		return 0;
 	}
 }
 
