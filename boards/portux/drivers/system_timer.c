@@ -12,10 +12,14 @@
 static volatile system_timer* st = (system_timer*) SYSTEM_TIMER;
 
 static u32 next_period;
+static u32 period_time;
+
+static volatile u64 system_time = 0;
 
 static void set_period_and_restart(u16 period) {
 	st->interval_mode = period;
 	st->interrupt_enable = STATUS_PERIOD;
+	period_time = period;
 }
 
 static void disable_interval_timer() {
@@ -58,9 +62,13 @@ bool timer_interrupt_callback() {
 	}
 	u32 status = st->status;
 	if (status & STATUS_PERIOD) {
+		system_time += period_time;
 		timer_handler();
 		return true;
 	}
 	return false;
 }
 
+u64 get_system_time() {
+	return system_time;
+}

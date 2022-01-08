@@ -32,9 +32,9 @@ void thread_swap_callback(u32* context);
 
 void block_current(u32* hw_context);
 
-void unblock(uint id);
+void unblock(uint id, u32 return_value);
 
-void unblock_now(uint id, u32* hw_context);
+void unblock_now(uint id, u32* hw_context, u32 return_value);
 
 #define default_init_thread_state_args { \
 	.start = NULL, \
@@ -44,5 +44,7 @@ void unblock_now(uint id, u32* hw_context);
 	.args = {0}, \
 	.is_sys=false \
 }
+
+void sleep(u32* hw_context, u32 delay);
 
 #endif

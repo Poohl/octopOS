@@ -34,6 +34,12 @@ static volatile if_hw_mem_dbgu* dbgu;
 static byte_loop_queue send_buff;
 static byte_loop_queue recv_buff;
 
+
+typedef void(*getc_done_callabck)(byte);
+
+static getc_done_callabck getc_callback = NULL;
+
+
 int dbgu_init() {
 	dbgu = (if_hw_mem_dbgu*) DBGU;
 	dbgu->control = CONTROL_ENABLE_RX | CONTROL_RESET_STATUS_BITS;
@@ -83,13 +89,15 @@ static void slow_print(char c) {
 void dbgu_interupt_callback() {
 	u32 status = dbgu->status;
 	if (status & STATUS_RX_READY) {
+		if (getc_callback)
+			getc_callback(dbgu->rx);
 		//blq_push(&recv_buff, dbgu->rx);
 		init_thread_state_args args = default_init_thread_state_args;
 		args.start = (void_void_func_ptr) slow_print;
 		args.args[0] = dbgu->rx;
 		args.is_sys = true;
 		args.stack_size = 0x100;
-		char name[] = {'T', 'e', 's', 't', ' ', (char) args.args[0], 0};
+		char name[7] = {'T', 'e', 's', 't', ' ', (char) args.args[0], 0};
 		if (new_thread(name, &args) < 0)
 			printf("Error creating thread %s\r\n", name);
 
@@ -138,4 +146,9 @@ void printyprint() {
 byte get_recvbuff_head() {
 	while (recv_buff.c_size == 0) asm("":::"memory"); // DON'T TOUCH THIS OR IT BREAKS!!!
 	return blq_pop(&recv_buff);
+}
+
+int debug_get_char_async(void(*done)(byte)) {
+	getc_callback = done;
+	return 0;
 }

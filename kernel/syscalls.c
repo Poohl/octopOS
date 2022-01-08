@@ -21,6 +21,8 @@ void_void_func_ptr syscall_table[SYSCALLS];
 #pragma GCC diagnostic ignored "-Wincompatible-pointer-types"
 #pragma GCC diagnostic ignored "-Wreturn-type"
 
+int impl_get_char(u32* hw_context);
+
 void init_syscalls() {
 	// fun fact: sizeof(syscall_init) is 4, sizeof(syscall_table) is 4*SYSCALLS
 	// Why? because gcc devs live in houses with opaque windows.
@@ -29,14 +31,25 @@ void init_syscalls() {
 		&new_thread,
 		&new_thread_raw,
 		&debug_put_char,
-		&debug_get_char,
-		NULL
+		syscall_context(&impl_get_char),
+		syscall_context(&sleep)
 	};
 	memcpy(syscall_table, syscall_init, sizeof(syscall_table));
 }
 
 void unhandled_syscall(u32 a, u32 b, u32 c, u32 d) {
 	exception_handler(EXCEPTION_UNKNOWN_SYSCALL, NULL, NULL);
+}
+
+static int getc_block_thread_id;
+
+void impl_get_char_callback(byte c) {
+	unblock(getc_block_thread_id, c);
+}
+
+int impl_get_char(u32* hw_context) {
+	debug_get_char_async(impl_get_char_callback);
+	block_current(hw_context);
 }
 
 __attribute__ ((noinline))
@@ -65,7 +78,7 @@ int sys_debug_get_char() {
 }
 
 __attribute__ ((noinline))
-void sys_sleep(u64 nsec) {
+void sys_sleep(u32 _ignore, u32 delay) {
 	do_syscall(5);
 }
 

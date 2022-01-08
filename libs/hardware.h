@@ -23,10 +23,12 @@ typedef struct {
 
 int debug_put_char(char c);
 int debug_get_char();
+int debug_get_char_async(void(*done)(byte));
 sequence_io_status debug_write(uint len, const byte* data);
 sequence_io_status debug_read(uint len, byte* buff);
 
 int set_timer_interval(uint period);
+u64 get_system_time();
 
 #endif
 

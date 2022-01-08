@@ -13,6 +13,7 @@ typedef struct {
 	uint id;
 	int state;
 	char name[8];
+	u64 sleepy;
 	cpu_context context;
 } tcb;
 
@@ -88,6 +89,7 @@ static int internal_new_thread_finalizer(char* name, int id) {
 	memcpy(&processes[id].name, name, 7);
 	processes[id].id = id;
 	processes[id].state = ALIVE;
+	processes[id].sleepy = 0;
 	printf("created thread with id %x\n", id);
 	if (++real_alive_threads == 2)
 		set_timer_interval(10000);
@@ -118,7 +120,9 @@ int new_thread_raw(char* name, cpu_context* init_state, bool may_be_sys) {
 void thread_swap_callback(u32* context) {
 	uint next;
 	for (next = (current + 1) & 0xF; next != current; next = next + 1 & 0xF) {
-		if (processes[next].state == ALIVE && next != 0)
+		if (processes[next].state == ALIVE &&
+				processes[next].sleepy < get_system_time() &&
+				next != 0)
 			break;
 
 		// get your chainsaw and your shotgun cause we're going on a zombie-hunt
@@ -144,16 +148,22 @@ void block_current(u32* hw_context) {
 	thread_swap_callback(hw_context);
 }
 
-void unblock(uint id) {
+void unblock(uint id, u32 return_value) {
+	set_return_values(&processes[id].context, &return_value, 1);
 	if (++real_alive_threads == 2)
 		set_timer_interval(10000);
 	processes[id].state = ALIVE;
 }
 
-void unblock_now(uint id, u32* hw_context) {
-	unblock(id);
+void unblock_now(uint id, u32* hw_context, u32 return_value) {
+	unblock(id, return_value);
 	swap(&processes[current].context, hw_context, &processes[id].context);
 	current = id;
+}
+
+void sleep(u32* hw_context, u32 delay) {
+	processes[current].sleepy = get_system_time() + delay;
+	thread_swap_callback(hw_context);
 }
 
 void print_q(tcb_queue* q) {
