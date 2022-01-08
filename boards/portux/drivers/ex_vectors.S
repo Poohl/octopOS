@@ -143,7 +143,7 @@ push {lr}
 ldr ip, [lr, #-4]
 and ip, ip, #0x00FFFFFF
 // load the routine
-cmp ip, #(SYSCALLS + 1)
+cmp ip, #7 //#(SYSCALLS + 1)
 ldr lr, =syscall_table
 ldrhs ip, =unhandled_syscall
 ldrlo ip, [lr, ip, LSL#2] // syscall_table + idx * 4

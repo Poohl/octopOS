@@ -3,6 +3,7 @@
 #include "process_mgmt.h"
 #include "libs/printf.h"
 #include "syscalls.h"
+#include "config.h"
 
 #define DEAD	0
 #define ALIVE	1
@@ -26,6 +27,7 @@ typedef struct {
 uint current;
 
 uint real_alive_threads;
+u64 keep_interrupts_enabled = 0;
 
 tcb processes[16];
 tcb_queue tcbq;
@@ -54,7 +56,8 @@ void release_tcb_slot(tcb_queue* q, int slt) {
 }
 
 void idle() {
-	set_timer_interval(0);
+	if (real_alive_threads < 2 && keep_interrupts_enabled < get_system_time())
+		set_timer_interval(0);
 	while (1)
 		tight_powersave();
 }
@@ -64,7 +67,7 @@ void exit(u32* hw_context) {
 	// if (current.open_handles == 0)
 	processes[current].state = DEAD;
 	release_tcb_slot(&tcbq, current);
-	if (--real_alive_threads == 1)
+	if (--real_alive_threads == 1 && keep_interrupts_enabled < get_system_time())
 		set_timer_interval(0);
 	thread_swap_callback(hw_context);
 }
@@ -92,7 +95,7 @@ static int internal_new_thread_finalizer(char* name, int id) {
 	processes[id].sleepy = 0;
 	printf("created thread with id %x\n", id);
 	if (++real_alive_threads == 2)
-		set_timer_interval(10000);
+		set_timer_interval(SCHEDULER_TIMESLICE);
 	return id;
 }
 
@@ -132,26 +135,28 @@ void thread_swap_callback(u32* context) {
 			printf("BOOM! -> %x\n", processes[next].id);
 		}
 	}
-	if (next == current && processes[current].state != ALIVE) {
+	if (next == current && (processes[current].state != ALIVE || processes[next].sleepy >= get_system_time())) {
 		next = 0;
 	}
-	printf("Swap from slot %x to %x\r\n", current, next);
+	printf("Swap from slot %x to %x (%x total)\r\n", current, next, real_alive_threads);
 	swap(&processes[current].context, context, &processes[next].context);
 	current = next;
 	//print_q(&tcbq);
 }
 
-void block_current(u32* hw_context) {
+int block_current(u32* hw_context) {
 	processes[current].state = BLOCKED;
-	if (--real_alive_threads == 1)
+	int out = current;
+	if (--real_alive_threads == 1 && keep_interrupts_enabled < get_system_time())
 		set_timer_interval(0);
 	thread_swap_callback(hw_context);
+	return out;
 }
 
 void unblock(uint id, u32 return_value) {
 	set_return_values(&processes[id].context, &return_value, 1);
 	if (++real_alive_threads == 2)
-		set_timer_interval(10000);
+		set_timer_interval(SCHEDULER_TIMESLICE);
 	processes[id].state = ALIVE;
 }
 
@@ -163,6 +168,9 @@ void unblock_now(uint id, u32* hw_context, u32 return_value) {
 
 void sleep(u32* hw_context, u32 delay) {
 	processes[current].sleepy = get_system_time() + delay;
+	if (processes[current].sleepy > keep_interrupts_enabled)
+		keep_interrupts_enabled = processes[current].sleepy;
+	set_timer_interval(SCHEDULER_TIMESLICE);
 	thread_swap_callback(hw_context);
 }
 

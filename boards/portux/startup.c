@@ -11,6 +11,8 @@
 #include "drivers/cpu.h"
 #include "kernel/process_mgmt.h"
 #include "kernel/syscalls.h"
+#include "apps/u5_demo.h"
+#include "kernel/config.h"
 
 
 // needed to prevent gcc from optimizing c_entry out.
@@ -51,7 +53,7 @@ void c_entry(void) {
 						||
 					   \  /
 					    \/			*/
-	set_timer_interval(10000);
+	set_timer_interval(SCHEDULER_TIMESLICE);
 
 	/* interrupt enable @ aic (2)*/
 	volatile aic* inter_tset = (aic*) AIC;
@@ -66,6 +68,10 @@ void c_entry(void) {
 
 	//dbgu_write_async(17, "async writing!\r\n");
 	//dbgu_async_write_flush();
+
+	init_thread_state_args reader_t = default_init_thread_state_args;
+	reader_t.start = &reader;
+	new_thread("reader", &reader_t);
 
 	/* interrupt tst loop*/
 	while (42) {

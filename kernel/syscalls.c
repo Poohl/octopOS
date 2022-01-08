@@ -49,7 +49,7 @@ void impl_get_char_callback(byte c) {
 
 int impl_get_char(u32* hw_context) {
 	debug_get_char_async(impl_get_char_callback);
-	block_current(hw_context);
+	getc_block_thread_id = block_current(hw_context);
 }
 
 __attribute__ ((noinline))

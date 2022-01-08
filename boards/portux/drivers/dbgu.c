@@ -91,15 +91,16 @@ void dbgu_interupt_callback() {
 	if (status & STATUS_RX_READY) {
 		if (getc_callback)
 			getc_callback(dbgu->rx);
-		//blq_push(&recv_buff, dbgu->rx);
-		init_thread_state_args args = default_init_thread_state_args;
+		else 
+			blq_push(&recv_buff, dbgu->rx);
+		/*init_thread_state_args args = default_init_thread_state_args;
 		args.start = (void_void_func_ptr) slow_print;
 		args.args[0] = dbgu->rx;
 		args.is_sys = true;
 		args.stack_size = 0x100;
 		char name[7] = {'T', 'e', 's', 't', ' ', (char) args.args[0], 0};
 		if (new_thread(name, &args) < 0)
-			printf("Error creating thread %s\r\n", name);
+			printf("Error creating thread %s\r\n", name);*/
 
 	}
 	if (status & STATUS_TX_READY) {
