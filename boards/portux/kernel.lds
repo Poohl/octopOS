@@ -4,7 +4,10 @@ SECTIONS
 	. = 0x200000;
 	.vectors : { *(.vectors) }
 	.init : { *(.init) }
-	.text : { *(.text) }
+	.text : { *(.text*) }
+	PROVIDE(__INIT_ARRAY_S__ = .);
+	.init_array : {*(.init_array)}
+	PROVIDE(__INIT_ARRAY_E__ = .);
 
 	/* fixing gcc's gambling problem */
 	.text.unlikely : { *(.text.unlikely) }

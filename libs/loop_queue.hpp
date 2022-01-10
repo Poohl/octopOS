@@ -1,5 +1,8 @@
 
-#include "default.h"
+#ifndef LOOP_QUEUE_HPP
+#define LOOP_QUEUE_HPP
+
+#include "default.hpp"
 
 /* here's the limit of c...*/
 
@@ -43,4 +46,12 @@ template <typename T, uint size> class LoopQueue {
 			} else
 				return NULL;
 		}
+		T* peek() {
+			if (fill > 0)
+				return &buffer[read % size];
+			else
+				return NULL;
+		}
 };
+
+#endif

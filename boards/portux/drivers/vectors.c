@@ -6,7 +6,6 @@
 #include "libs/hardware.h"
 #include "aic.h"
 #include "libs/printf.h"
-#include "drivers/dbgu.h"
 
 extern void (*reset_vector)();
 extern void (*undef_instr_vector)();

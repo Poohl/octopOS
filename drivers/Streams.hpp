@@ -1,45 +1,37 @@
 
 #ifndef STREAMS_H
 #define STREAMS_H
-
+extern "C" {
+#include "libs/hardware.h"
+}
 #include "default.hpp"
-#include "hardware.h"
+#include "Callback.hpp"
 
 class BlockingInStream {
 	public:
-		sequence_io_status read(byte* dest, uint len);
-		int read_byte();
+		virtual sequence_io_status read(byte* dest, uint len);
+		virtual int read_byte() = 0;
 };
 
 class BlockingOutStream {
 	public:
-		sequence_io_status write(const byte* data, uint len);
-		int write_byte(byte data);
+		virtual sequence_io_status write(const byte* data, uint len);
+		virtual int write_byte(byte data) = 0;
 };
 
-class BlockingIOStream : public BlockingInStream, public BlockingOutStream {
-};
-
-class AsyncInStream : public BlockingInStream {
+class AsyncInStream {
 	public:
-		void read(byte* dest, uint len, void (*finished_callback)(sequence_io_status*));
-		void read_byte(void (*finished_callback)(int));
-		int available();
-		sequence_io_status read_available(byte* dest, uint len);
-		sequence_io_status discard();
+		virtual void read(byte* dest, uint len, Callback<sequence_io_status>* done) = 0;
+		virtual int available();
+		virtual sequence_io_status read_available(byte* dest, uint len);
+		virtual sequence_io_status discard();
 };
 
-class AsyncOutStream : public BlockingOutStream {
+class AsyncOutStream {
 	public:
-		void write(const byte* data, uint len, void (*finished_callback)(sequence_io_status*));
-		void write_byte(void (*finished_callback)(int));
-		int pending();
-		sequence_io_status flush();
-		sequence_io_status abort();
-};
-
-class AsyncIOStream: public AsyncInStream, public AsyncOutStream {
-	
+		virtual void write(const byte* data, uint len, Callback<sequence_io_status>* done) = 0;
+		virtual int pending();
+		virtual sequence_io_status abort();
 };
 
 #endif
