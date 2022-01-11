@@ -46,9 +46,10 @@ bool DebugUnit::baseCallback() {
 	if (status & STATUS_TX_READY) {
 		if (writeQueue.peek()) {
 			base->tx = writeQueue.peek()->data[writeProgress++];
-			if (writeProgress == writeQueue.peek()->len)
+			if (writeProgress == writeQueue.peek()->len) {
 				writeQueue.pop()->done->call(sequence_io_status {writeProgress, 0});
 				writeProgress = 0;
+			}
 		} else {
 			this->base->interrupt_disable = STATUS_TX_READY;
 		}

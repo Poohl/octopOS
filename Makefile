@@ -28,7 +28,7 @@ CC_FLAGS += $(addprefix -I,$(INCLUDE)) -include default.h
 CC_DEBUG_FLAGS = -g -DDEBUG
 
 CXX = arm-none-eabi-g++
-CXX_FLAGS = -Wall -O2 -c -Wextra -ffreestanding
+CXX_FLAGS = -Wall -O2 -c -Wextra -ffreestanding -Werror=return-type -Werror=misleading-indentation -fno-rtti -nostartfiles
 CXX_FLAGS += $(addprefix -I,$(INCLUDE)) -include default.hpp
 CXX_DEBUG_FLAGS = -g -DDEBUG
 
