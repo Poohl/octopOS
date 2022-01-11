@@ -30,11 +30,13 @@ void exit(u32* hw_context);
 
 void thread_swap_callback(u32* context);
 
-void block_current(u32* hw_context);
+uint block_current(u32* hw_context);
 
 void unblock(uint id);
 
 void unblock_now(uint id, u32* hw_context);
+
+void unblock_fancy(uint id, u32* hw_context, u32* return_vals, uint return_count);
 
 #define default_init_thread_state_args { \
 	.start = NULL, \

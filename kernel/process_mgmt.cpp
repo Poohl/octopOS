@@ -28,6 +28,7 @@ tcb processes[NUM_THREADS];
 LoopQueue<uint, NUM_THREADS> tcb_free_q;
 
 extern "C" void idle() {
+	set_timer_interval(0);
 	while (1)
 		tight_powersave();
 }
@@ -99,28 +100,27 @@ void thread_swap_callback(u32* context) {
 	for (next = (current + 1) % NUM_THREADS; next != current; next = (next + 1) % NUM_THREADS) {
 		if (processes[next].state == ALIVE && next != 0)
 			break;
-
-		// get your chainsaw and your shotgun cause we're going on a zombie-hunt
-		if (processes[next].state == ZOMBIE) {
-			tcb_free_q.push(processes[next].id);
-			processes[next].state = DEAD;
-			printf("BOOM! -> %x\n", processes[next].id);
-		}
 	}
 	if (next == current && processes[current].state != ALIVE) {
 		next = 0;
 	}
-	printf("Swap from slot %x to %x\r\n", current, next);
-	swap(&processes[current].context, context, &processes[next].context);
-	current = next;
+	if (current != next) {
+		printf("Swap from slot %x to %x\r\n", current, next);
+		swap(&processes[current].context, context, &processes[next].context);
+		current = next;
+	} else {
+		printf("Warning: swap ID on %x, alive_threads: %x\r\n", current, real_alive_threads);
+	}
 	//print_q(&tcbq);
 }
 
-void block_current(u32* hw_context) {
+uint block_current(u32* hw_context) {
 	processes[current].state = BLOCKED;
+	uint out = current;
 	if (--real_alive_threads == 1)
 		set_timer_interval(0);
 	thread_swap_callback(hw_context);
+	return out;
 }
 
 void unblock(uint id) {
@@ -133,4 +133,15 @@ void unblock_now(uint id, u32* hw_context) {
 	unblock(id);
 	swap(&processes[current].context, hw_context, &processes[id].context);
 	current = id;
+}
+
+void unblock_fancy(uint id, u32* hw_context, u32* return_vals, uint return_count) {
+	if (processes[id].state == ALIVE)
+		return;
+	if (return_vals)
+		set_return_values(&processes[id].context, return_vals, return_count);
+	if (hw_context)
+		unblock_now(id, hw_context);
+	else
+		unblock(id);
 }

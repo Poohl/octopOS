@@ -21,6 +21,9 @@ extern "C" {
 DebugUnit dbgu;
 SystemTimer timer;
 
+AsyncOutStream* debug_out_stream = &dbgu;
+AsyncInStream* debug_in_stream = &dbgu;
+
 extern u32 __INIT_ARRAY_S__;
 extern u32 __INIT_ARRAY_E__;
 
@@ -67,9 +70,19 @@ extern "C" {
 
 }
 
+static void stupid_spinner() {
+	while (1) {
+		printf("hEy, LisTEn!\r\n");
+		for (uint i = 0; i < 10000000; ++i)
+			asm volatile("nop" : : : "memory");
+	}
+}
+
 static void init_thread() {
 	while (1) {
 		printf("Working!\r\n");
+		sys_debug_put_char(0, '#');
+
 		for (int i = 0; i < 100000; ++i)
 			asm volatile("" : : : "memory");
 	}
@@ -86,8 +99,6 @@ void c_entry(void) {
 	timer.setCallback(&no_callback);
 	init_stacks();
 	init_vector_handling();
-
-	
 
 	/* interrups */
 	u32 buff;
@@ -123,6 +134,11 @@ void c_entry(void) {
 	init_thread_state_args initt = default_init_thread_state_args;
 	initt.start = &init_thread;
 	new_thread("init", &initt);
+
+	init_thread_state_args spint = default_init_thread_state_args;
+	spint.start = &stupid_spinner;
+	new_thread("spin", &spint);
+
 
 	while (42) {
 		asm volatile("nop":::);
