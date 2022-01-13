@@ -82,7 +82,7 @@ static void init_thread() {
 	while (1) {
 		printf("Working!\r\n");
 		sys_debug_put_char(0, '#');
-
+		
 		for (int i = 0; i < 100000; ++i)
 			asm volatile("" : : : "memory");
 	}
@@ -135,9 +135,9 @@ void c_entry(void) {
 	initt.start = &init_thread;
 	new_thread("init", &initt);
 
-	init_thread_state_args spint = default_init_thread_state_args;
-	spint.start = &stupid_spinner;
-	new_thread("spin", &spint);
+	//init_thread_state_args spint = default_init_thread_state_args;
+	//spint.start = &stupid_spinner;
+	//new_thread("spin", &spint);
 
 
 	while (42) {

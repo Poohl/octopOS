@@ -96,11 +96,13 @@ void sys_restore_thread(char* name,  cpu_context* context) {
 __attribute__ ((noinline))
 int sys_debug_put_char(char c) {
 	do_syscall(3);
+	asm volatile("bx lr");
 }
 
 __attribute__ ((noinline))
 int sys_debug_get_char() {
 	do_syscall(4);
+	asm volatile("bx lr");
 }
 
 __attribute__ ((noinline))

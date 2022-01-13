@@ -132,6 +132,7 @@ void unblock(uint id) {
 			set_timer_interval(0);
 			if (!get_stacked_context())
 				printf("FATAL: Lockup imminient, unblocked but no context stacked!\r\n");
+			printf("Swap from slot %x to %x\r\n", current, id);
 			swap(&processes[current].context, get_stacked_context(), &processes[id].context);
 			current = id;
 	}
@@ -140,6 +141,7 @@ void unblock(uint id) {
 
 void unblock_now(uint id, u32* hw_context) {
 	unblock(id);
+	printf("Swap from slot %x to %x\r\n", current, id);
 	swap(&processes[current].context, hw_context, &processes[id].context);
 	current = id;
 }
