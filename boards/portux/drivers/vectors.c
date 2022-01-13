@@ -56,3 +56,9 @@ void set_interrupt_handler(u8 num, void_void_func_ptr handler, u8 prio, u8 mode)
 		_aic->isr_mode[num] = (mode << 5) | prio;
 	}
 }
+
+extern u32** context_pointer_stack;
+
+u32* get_stacked_context() {
+	return *context_pointer_stack;
+}

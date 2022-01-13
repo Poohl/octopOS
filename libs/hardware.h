@@ -28,6 +28,8 @@ sequence_io_status debug_read(uint len, byte* buff);
 
 int set_timer_interval(uint period);
 
+u32* get_stacked_context();
+
 #endif
 
 /**

@@ -12,23 +12,32 @@ SystemTimer::SystemTimer(mmio_system_timer* b) : underlying(b), callback(NULL) {
 }
 
 void SystemTimer::setCallback(Callback<>* c) {
-	if (c) {
-		this->callback = c;
-		this->underlying->interrupt_enable = STATUS_PERIOD;
-	} else {
+	if (!c)
 		this->underlying->interrupt_disable = STATUS_PERIOD;
-		this->callback = c;
-	}
+	this->callback = c;
+	if (c && period)
+		this->underlying->interrupt_enable = STATUS_PERIOD;
 }
 
-int SystemTimer::setPeriod(uint period) {
-	if (period == 0) {
-		this->underlying->interrupt_disable = STATUS_PERIOD;
-	} else if (period <= 0x10000) {
-		this->underlying->interval_mode = period;
-		this->underlying->interrupt_enable = STATUS_PERIOD;
-	} else
+int SystemTimer::setPeriod(uint p) {
+	if (p >= 0x10000)
 		return -1;
+	if (p == 0)
+		this->underlying->interrupt_disable = STATUS_PERIOD;
+	period = p;
+	this->underlying->interval_mode = p;
+	if (p && callback)
+		this->underlying->interrupt_enable = STATUS_PERIOD;
+	return 0;
+}
+
+int SystemTimer::setNextDelay(uint d) {
+	if (!callback)
+		return 0;
+	delay = d;
+	this->underlying->interval_mode = d;
+	if (!period)
+		this->underlying->interrupt_enable = STATUS_PERIOD;
 	return 0;
 }
 
@@ -36,6 +45,13 @@ bool SystemTimer::underlying_callback() {
 	u32 status = this->underlying->status;
 	if (status & STATUS_PERIOD) {
 		this->callback->call();
+		if (delay) {
+			delay = 0;
+			if (period)
+				this->underlying->interval_mode = period;
+			else
+				this->underlying->interrupt_disable = STATUS_PERIOD;
+		}
 		return true;
 	}
 	return false;

@@ -17,17 +17,3 @@ _start:
 .word 0xe320f003
 	b       .Lend           // nirvana-loop
 
-.section .text, "ax"
-.global system_interrupt_hand
-system_interrupt_hand:
-	sub lr, lr, #4
-	push {r0-r12, lr}
-	bl	dbgu_interupt_callback
-	bl	timer_interrupt_callback
-	cmp r0, #0
-	movne r0, sp
-	blne thread_swap_callback
-	// I swear to god gcc, if I find a solution to this: PC + imm = AIC + 0x130 I'll come over an murder you
-	ldr r0, =#AIC+0x130
-	str r0, [r0]
-	ldm	sp!, {r0-r12, pc}^

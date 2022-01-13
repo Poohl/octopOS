@@ -16,10 +16,11 @@
 .global interrupt_vector
 .global fast_interrupt_vector
 
+// full-decending stack pointer to currently saved context
+.global context_pointer_stack
+
 // helpers for c code
 .global init_stacks
-// helper to return from exception
-.global return_from_vector
 
 vector_table:
 ldr PC, reset_vector
@@ -93,44 +94,85 @@ MSR cpsr, r0
 
 bx lr
 
-return_from_vector:
-ldm sp, {pc}
+
+context_pointer_stack_base:
+.word 0x0
+.word 0x0
+.word 0x0
+.word 0x0
+.word 0x0
+.word 0x0
+.word 0x0
+.word 0x0
+.word 0x0
+.word 0x0
+.word 0x0
+.word 0x0
+.word 0x0
+.word 0x0
+.word 0x0
+.word 0x0
+context_pointer_stack_top:
+context_pointer_stack:
+.word context_pointer_stack_top
+
+.macro PUSH_CONTEXT TMP
+push {r0-r12, lr}
+ldr \TMP, context_pointer_stack
+str sp, [\TMP, #-4]!
+str \TMP, context_pointer_stack
+.endm
+
+.macro DISCARD_CONTEXT ZERO, TMP
+and \ZERO, \ZERO, #0
+ldr \TMP, context_pointer_stack
+str \ZERO, [\TMP], #4
+str \TMP, context_pointer_stack
+.endm
 
 .global UNDEF_ex
 UNDEF_ex:
-push {r0-r12, lr}
+PUSH_CONTEXT r2
 mov r0, #EXCEPTION_ILLEGAL_INST
-mov r1, lr
-add r1, r1, #-4 
-ldr r2, [r1]
+add r1, lr, #-4 
 bl  exception_handler
-// mov lr, r0
+DISCARD_CONTEXT r0, lr
 ldm sp!, {r0-r12, pc}^
 
 .global D_ABORT_ex
 D_ABORT_ex:
-push {r0-r12, lr}
+PUSH_CONTEXT r2
 mov r0, #EXCEPTION_ILLEGAL_DATA
-mov r1, lr
-add r1, r1, #-8
-ldr r2, [r1]
+add r1, lr, #-8
 bl  exception_handler
-// mov lr, r0
+DISCARD_CONTEXT r0, lr
 ldm sp!, {r0-r12, pc}^
 
 .global C_ABORT_ex
 C_ABORT_ex:
-push {r0-r12, lr}
+PUSH_CONTEXT r2
 mov r0, #EXCEPTION_ILLEGAL_CODE
-mov r1, lr
-add r1, r1, #-4 
-//ldr r2, [r1]
+add r1, lr, #-4
 bl  exception_handler
-// mov lr, r0
+DISCARD_CONTEXT r0, lr
 ldm sp!, {r0-r12, pc}^
 
+.global system_interrupt_hand
+system_interrupt_hand:
+	sub lr, lr, #4
+	PUSH_CONTEXT r0
+	bl	dbgu_interupt_callback
+	bl	timer_interrupt_callback
+	cmp r0, #0
+	movne r0, sp
+	blne thread_swap_callback
+	// I swear to god gcc, if I find a solution to this: PC + imm = AIC + 0x130 I'll come over an murder you
+	ldr r0, =#AIC+0x130
+	str r0, [r0]
+	DISCARD_CONTEXT r0, r1
+	ldm	sp!, {r0-r12, pc}^
+
 #define SYSCALLS 4
-#define SYSCALLS_W_CONTEXT 1
 
 .global SWI
 /* C AAPCS (almost, consider this a function-prolouge)
@@ -149,16 +191,20 @@ ldrhs ip, =unhandled_syscall
 ldrlo ip, [lr, ip, LSL#2] // syscall_table + idx * 4
 tst ip, #1
 pushne {r0-r12}
-movne r0, sp
-ldreq lr, =SWI_quick_ret
+ldr lr, context_pointer_stack
+strne sp, [lr, #-4]!
+addeq lr, lr, #-4
+str lr, context_pointer_stack
 ldrne lr, =SWI_context_ret
+ldreq lr, =SWI_quick_ret
+movne r0, sp
 bic pc, ip, #1
 
 SWI_quick_ret:
-and r1, r1, #0
+DISCARD_CONTEXT r3, r2
 and r2, r2, #0
-and r3, r3, #0
 ldm sp!, {pc}^
 
 SWI_context_ret:
+DISCARD_CONTEXT r2, r3
 ldm sp!, {r0-r12, pc}^

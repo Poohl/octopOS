@@ -74,8 +74,8 @@ void init_syscalls() {
 	memcpy(syscall_table, init, sizeof(init));
 }
 
-void unhandled_syscall(u32 a, u32 b, u32 c, u32 d) {
-	exception_handler(EXCEPTION_UNKNOWN_SYSCALL, NULL, NULL);
+void unhandled_syscall() {
+	exception_handler(EXCEPTION_UNKNOWN_SYSCALL, NULL, get_stacked_context());
 }
 
 __attribute__ ((noinline))

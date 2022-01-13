@@ -124,8 +124,17 @@ uint block_current(u32* hw_context) {
 }
 
 void unblock(uint id) {
-	if (++real_alive_threads == 2)
-		set_timer_interval(10000);
+	switch(++real_alive_threads) {
+		case 2:
+			set_timer_interval(10000);
+			break;
+		case 1:
+			set_timer_interval(0);
+			if (!get_stacked_context())
+				printf("FATAL: Lockup imminient, unblocked but no context stacked!\r\n");
+			swap(&processes[current].context, get_stacked_context(), &processes[id].context);
+			current = id;
+	}
 	processes[id].state = ALIVE;
 }
 
