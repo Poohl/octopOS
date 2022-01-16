@@ -24,9 +24,8 @@
 #define ERR_ABORT (1 << 8)
 #define ERR_NO_REQUEST (1 << 9)
 
-DebugUnit::DebugUnit() : base(NULL) {};
-
-DebugUnit::DebugUnit(mmio_dbgu* b) : base(b) {
+void DebugUnit::init(mmio_dbgu* _base) {
+	base = _base;
 	base->interrupt_disable = 0xFFFFFFFF;
 	base->control = CONTROL_RESET_STATUS_BITS;
 }

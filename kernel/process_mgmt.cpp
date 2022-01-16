@@ -1,12 +1,16 @@
 extern "C" {
 #include "process_mgmt.h"
 #include "drivers/cpu.h"
-#include "process_mgmt.h"
 #include "libs/printf.h"
 #include "libs/hardware.h"
 #include "syscalls.h"
 }
 #include "libs/loop_queue.hpp"
+#include "drivers/Callback.hpp"
+#include "drivers/Timer.hpp"
+#include "init_process_mgmt.hpp"
+
+
 #define DEAD	0
 #define ALIVE	1
 #define ZOMBIE	2
@@ -27,8 +31,17 @@ uint real_alive_threads;
 tcb processes[NUM_THREADS];
 LoopQueue<uint, NUM_THREADS> tcb_free_q;
 
+class SchedulerCallback : public Callback<> {
+	public:
+		void call() {
+			thread_swap_callback(get_stacked_context());
+		};
+};
+
+static SchedulerCallback schedulerCaller;
+static PeriodicTimer* timer;
+
 extern "C" void idle() {
-	set_timer_interval(0);
 	while (1)
 		tight_powersave();
 }
@@ -38,11 +51,19 @@ void exit(u32* hw_context) {
 	// if (current.open_handles == 0)
 	processes[current].state = DEAD;
 	if (--real_alive_threads == 1)
-		set_timer_interval(0);
+		((PeriodicTimer*) timer)->setPeriod(0);
 	thread_swap_callback(hw_context);
 }
 
-void init_process_mgmt() {
+void helper() {
+	PeriodicTimer* t = timer;
+	t->setCallback(NULL);
+}
+
+void init_process_mgmt(PeriodicTimer* _timer) {
+	PeriodicTimer* timer = _timer;
+	timer->setCallback(&schedulerCaller);
+	helper();
 	current = 15;
 	memset(processes, 0, sizeof(processes));	// clear tcb-array from ghosts
 	for (int i = 0; i < NUM_THREADS; ++i) {
@@ -56,22 +77,27 @@ void init_process_mgmt() {
 	idle_args.is_sys = true;
 	idle_args.stack_size = sizeof(processes[0].context.registers);
 	new_thread("idle", &idle_args);
-	real_alive_threads = 0;
+	//real_alive_threads = 0;
 }
 
-static int internal_new_thread_finalizer(const char* name, int id) {
+extern "C"
+int internal_new_thread_finalizer(const char* name, int id) {
 	processes[id].name[7] = 0;
 	memcpy(&processes[id].name, name, 7);
 	processes[id].id = id;
 	processes[id].state = ALIVE;
 	printf("created thread with id %x\n", id);
-	if (++real_alive_threads == 2)
-		set_timer_interval(10000);
+	/*if (++real_alive_threads == 2) {
+		printf("heck_of\r\n");
+	}*/
+	printf("%x\r\n", timer);
+	timer->setCallback(NULL);
 	return id;
 }
 
 extern "C"
 int new_thread(const char* name, init_thread_state_args* args) {
+	timer->setCallback(NULL);
 	uint* id_p = tcb_free_q.pop();
 	if (!id_p) return -1;
 	int id = *id_p;
@@ -118,7 +144,7 @@ uint block_current(u32* hw_context) {
 	processes[current].state = BLOCKED;
 	uint out = current;
 	if (--real_alive_threads == 1)
-		set_timer_interval(0);
+		timer->setPeriod(0);
 	thread_swap_callback(hw_context);
 	return out;
 }
@@ -126,10 +152,10 @@ uint block_current(u32* hw_context) {
 void unblock(uint id) {
 	switch(++real_alive_threads) {
 		case 2:
-			set_timer_interval(10000);
+			timer->setPeriod(10000);
 			break;
 		case 1:
-			set_timer_interval(0);
+			timer->setPeriod(0);
 			if (!get_stacked_context())
 				printf("FATAL: Lockup imminient, unblocked but no context stacked!\r\n");
 			printf("Swap from slot %x to %x\r\n", current, id);

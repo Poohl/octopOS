@@ -20,8 +20,6 @@ struct _init_thread_state_args {
 	bool is_sys;
 };
 
-void init_process_mgmt();
-
 int new_thread(const char* name, init_thread_state_args* args);
 
 int new_thread_raw(const char* name, cpu_context* init_state, bool may_be_sys);

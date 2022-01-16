@@ -45,9 +45,7 @@ class DebugUnit : public AsyncInStream, public AsyncOutStream, public BlockingIn
 		uint readProgress = 0;
 		uint writeProgress = 0;
 	public:
-		DebugUnit();
-		DebugUnit(mmio_dbgu* b);
-
+		void init(mmio_dbgu* _base);
 		virtual void read(byte* dest, uint len, Callback<sequence_io_status>* done);
 
 		virtual void write(const byte* data, uint len, Callback<sequence_io_status>* done);

@@ -19,14 +19,11 @@ class SystemTimer : public PeriodicTimer {
 	private:
 		volatile mmio_system_timer* underlying;
 		uint period;
-		bool delay;
 		Callback<>* callback;
 	public:
-		SystemTimer();
-		SystemTimer(mmio_system_timer* b);
+		void init(mmio_system_timer* b);
 		void setCallback(Callback<>* c);
 		int setPeriod(uint period);
-		int setNextDelay(uint delay);
 	/* protected: */
 		bool underlying_callback();
 };

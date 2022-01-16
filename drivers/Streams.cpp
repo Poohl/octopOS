@@ -2,8 +2,9 @@
 #include "Streams.hpp"
 
 sequence_io_status BlockingInStream::read(byte* dest, uint len) {
-	sequence_io_status out;
-	for (out = {0}; out.io < len && (out.err = read_byte()) >= 0; ++out.io);
+	sequence_io_status out; /////////////////////////////////////////!!!!!!!!!!!!!!!!!!!!!!!!
+	for (out = {0}; out.io < len && (out.err = read_byte()) >= 0; ++out.io)
+		dest[out.io] = out.err;
 	if (out.err >= 0)
 		out.err = 0;
 	return out;

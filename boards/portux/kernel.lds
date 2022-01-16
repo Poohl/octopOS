@@ -8,18 +8,20 @@ SECTIONS
 	PROVIDE(__INIT_ARRAY_S__ = .);
 	.init_array : {*(.init_array)}
 	PROVIDE(__INIT_ARRAY_E__ = .);
+	PROVIDE(__exidx_start = .);
+	PROVIDE(__exidx_end = .);
 
 	/* fixing gcc's gambling problem */
 	.text.unlikely : { *(.text.unlikely) }
 	
 	/* ahh, yes. The empty & unused section ld is in love with */
 	.COMMON : { *(COMMON)}
-	.data : { *(.data) }
+	.data : { *(.data*) }
 	
 	/* and once more with feeling */
 	.rodata : { *(.rodata*) }
 
-	.bss : { *(.bss)}
+	.bss : { *(.bss*)}
 
 	/* debug stuffs, copied from ld -verbose */
 	/* DWARF debug sections.

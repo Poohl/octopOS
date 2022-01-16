@@ -1,5 +1,8 @@
 #include "drivers/dbgu.hpp"
 #include "drivers/SystemTimer.hpp"
+#include "drivers/PeriodBasedMultiAlarm.hpp"
+#include "kernel/init_process_mgmt.hpp"
+//#include <new>
 
 extern "C" {
 #include "libs/hardware.h"
@@ -11,6 +14,11 @@ extern "C" {
 #include "drivers/cpu.h"
 #include "kernel/process_mgmt.h"
 #include "kernel/syscalls.h"
+
+void _exit(int x) {};
+void* _sbrk(intptr_t s) {return NULL;};
+int _kill(int p, int s) {return 0;};
+int _getpid() {return 0;};
 }
 
 // needed to prevent gcc from optimizing c_entry out.
@@ -20,6 +28,7 @@ extern "C" {
 
 DebugUnit dbgu;
 SystemTimer timer;
+PeriodBasedMultiAlarm alarmTimer;
 
 AsyncOutStream* debug_out_stream = &dbgu;
 AsyncInStream* debug_in_stream = &dbgu;
@@ -80,23 +89,31 @@ static void stupid_spinner() {
 
 static void init_thread() {
 	while (1) {
-		printf("Working!\r\n");
+		printf("lets go->");
 		sys_debug_put_char(0, '#');
-		
+		printf("WORKING\r\n");
+		sys_sleep(100000);
+		printf("Good morning\r\n");
 		for (int i = 0; i < 100000; ++i)
 			asm volatile("" : : : "memory");
 	}
 }
+
+static PeriodicTimer* timer_p = &timer;
 
 /* MAIN */
 extern "C"
 void c_entry(void) {
 	/* init  */
 	for (u32* f = &__INIT_ARRAY_S__; f < &__INIT_ARRAY_E__; ((void_void_func_ptr) (*(f++)))());
-	dbgu = DebugUnit((mmio_dbgu*) DBGU);
-	timer = SystemTimer((mmio_system_timer*) SYSTEM_TIMER);
-	NothingCallback no_callback;
-	timer.setCallback(&no_callback);
+	dbgu.init((mmio_dbgu*) DBGU);
+	printf("debug io works\n\r");
+	timer.init((mmio_system_timer*) SYSTEM_TIMER);
+
+	timer_p->setPeriod(10);
+
+	alarmTimer.init(&timer, 1000, false);
+	//new (&alarmTimer) PeriodBasedMultiAlarm(&timer, 1000, false);
 	init_stacks();
 	init_vector_handling();
 
@@ -105,7 +122,7 @@ void c_entry(void) {
 
 	asm("mrs %0, cpsr" :  "=r" (buff) : : );
 	printf_cpsr(buff);
-	init_process_mgmt();
+	init_process_mgmt((PeriodicTimer*) &alarmTimer);
 	init_syscalls();
 
 	enable_interrupts();
@@ -114,14 +131,6 @@ void c_entry(void) {
 	printf_cpsr(buff);
 
 	set_interrupt_handler(1, &system_interrupt_hand, 0, 0);
-
-	/* system clock */
-	/*    SET INTERVAL HERE
-						||
-						||
-					   \  /
-					    \/			*/
-	timer.setPeriod(10000);
 
 	/* interrupt enable @ aic (2)*/
 	volatile aic* inter_tset = (aic*) AIC;
@@ -139,7 +148,7 @@ void c_entry(void) {
 	//spint.start = &stupid_spinner;
 	//new_thread("spin", &spint);
 
-
+	sys_exit();
 	while (42) {
 		asm volatile("nop":::);
 		/*

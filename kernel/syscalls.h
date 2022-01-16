@@ -28,6 +28,6 @@ __attribute__ ((noinline))
 int sys_debug_get_char();
 
 __attribute__ ((noinline))
-void sys_sleep( u64 nsec);
+void sys_sleep(u32 ticks);
 
 #endif
