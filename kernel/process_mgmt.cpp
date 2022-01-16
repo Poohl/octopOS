@@ -8,7 +8,7 @@ extern "C" {
 #include "libs/loop_queue.hpp"
 #include "drivers/Callback.hpp"
 #include "drivers/Timer.hpp"
-#include "init_process_mgmt.hpp"
+#include "init_kernel.hpp"
 
 
 #define DEAD	0
@@ -61,7 +61,7 @@ void helper() {
 }
 
 void init_process_mgmt(PeriodicTimer* _timer) {
-	PeriodicTimer* timer = _timer;
+	timer = _timer;
 	timer->setCallback(&schedulerCaller);
 	helper();
 	current = 15;
@@ -87,11 +87,9 @@ int internal_new_thread_finalizer(const char* name, int id) {
 	processes[id].id = id;
 	processes[id].state = ALIVE;
 	printf("created thread with id %x\n", id);
-	/*if (++real_alive_threads == 2) {
-		printf("heck_of\r\n");
-	}*/
-	printf("%x\r\n", timer);
-	timer->setCallback(NULL);
+	if (++real_alive_threads == 2) {
+		timer->setPeriod(10000);
+	}
 	return id;
 }
 

@@ -8,8 +8,6 @@
 
 #define SYSCALLS 6
 
-void init_syscalls();
-
 void unhandled_syscall(u32 a, u32 b, u32 c, u32 d);
 
 __attribute__ ((noinline))
@@ -22,7 +20,7 @@ __attribute__ ((noinline))
 void sys_restore_thread( char* name,  cpu_context* context);
 
 __attribute__ ((noinline))
-int sys_debug_put_char(u32 _ignore, char c);
+int sys_debug_put_char(char c);
 
 __attribute__ ((noinline))
 int sys_debug_get_char();

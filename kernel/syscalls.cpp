@@ -4,6 +4,7 @@ extern "C" {
 #include "default.h"
 #include "libs/hardware.h"
 }
+#include "init_kernel.hpp"
 #include "drivers/Streams.hpp"
 #include "drivers/Callback.hpp"
 #include "drivers/Timer.hpp"
@@ -51,13 +52,13 @@ extern AsyncOutStream* debug_out_stream;
 extern AsyncInStream* debug_in_stream;
 
 
-void impl_debug_getchar(u32* hw_context) {
-	uint slot = wait_for_io_callback(hw_context);
+void impl_debug_getchar() {
+	uint slot = wait_for_io_callback(get_stacked_context());
 	debug_in_stream->read(&char_storage[slot], 1, &unblock_io_storage[slot]);
 }
 
-void impl_debug_putchar(u32* hw_context, char c) {
-	uint slot = wait_for_io_callback(hw_context);
+void impl_debug_putchar(char c) {
+	uint slot = wait_for_io_callback(get_stacked_context());
 	char_storage[slot] = c;
 	debug_out_stream->write(&char_storage[slot], 1, &unblock_io_storage[slot]);
 }
@@ -81,11 +82,14 @@ void impl_sleep(u32 delay) {
 	sleepAlarm->start(delay, &unblock_sleep_storage[tid]);
 }
 
-extern "C" { 
+void impl_exit() {
+	exit(get_stacked_context());
+}
+
 void init_syscalls(MultiAlarm* _sleepAlarm) {
 	sleepAlarm = _sleepAlarm;
 	void_void_func_ptr init[] = {
-		syscall_context(&exit),
+		syscall_context(&impl_exit),
 		syscall_nocontext(&new_thread),
 		syscall_nocontext(&new_thread_raw),
 		syscall_context(&impl_debug_putchar),
@@ -94,6 +98,10 @@ void init_syscalls(MultiAlarm* _sleepAlarm) {
 	};
 	memcpy(syscall_table, init, sizeof(init));
 }
+
+
+
+extern "C" {
 
 void unhandled_syscall() {
 	exception_handler(EXCEPTION_UNKNOWN_SYSCALL, NULL, get_stacked_context());

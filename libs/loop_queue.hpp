@@ -53,7 +53,9 @@ template <typename T, uint size> class LoopQueue {
 				return NULL;
 		}
 		T* iter(T* c) {
-			int pos = ((c - buffer) % size) - (read % size) + 1;
+			int pos = c
+					? ((c - buffer) % size) - (read % size) + 1
+					: (read % size);
 			if (pos < 0)
 				pos += size;
 			return pos < fill ? &buffer[(read + pos) % size] : NULL;

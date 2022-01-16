@@ -1,8 +1,7 @@
 #include "drivers/dbgu.hpp"
 #include "drivers/SystemTimer.hpp"
 #include "drivers/PeriodBasedMultiAlarm.hpp"
-#include "kernel/init_process_mgmt.hpp"
-//#include <new>
+#include "kernel/init_kernel.hpp"
 
 extern "C" {
 #include "libs/hardware.h"
@@ -90,7 +89,7 @@ static void stupid_spinner() {
 static void init_thread() {
 	while (1) {
 		printf("lets go->");
-		sys_debug_put_char(0, '#');
+		sys_debug_put_char('#');
 		printf("WORKING\r\n");
 		sys_sleep(100000);
 		printf("Good morning\r\n");
@@ -123,7 +122,7 @@ void c_entry(void) {
 	asm("mrs %0, cpsr" :  "=r" (buff) : : );
 	printf_cpsr(buff);
 	init_process_mgmt((PeriodicTimer*) &alarmTimer);
-	init_syscalls();
+	init_syscalls((MultiAlarm*) &alarmTimer);
 
 	enable_interrupts();
 

@@ -2,6 +2,10 @@
 #include "default.hpp"
 #include "PeriodBasedMultiAlarm.hpp"
 
+bool alarmStorageComp(const AlarmStorage* a, const AlarmStorage* b) {
+	return a->done_time <= b->done_time;
+}
+
 PeriodBasedMultiAlarm::PeriodBasedMultiAlarm() {};
 
 void PeriodBasedMultiAlarm::init(PeriodicTimer* _base, uint _resolution, bool _powersave) {
@@ -24,7 +28,7 @@ void PeriodBasedMultiAlarm::call() {
 		periodCallback->call();
 		next_period += period;
 	}
-	for (AlarmStorage* a = alarms.iter(NULL); a; a = alarms.iter(a))
+	for (AlarmStorage* a = alarms.peek(); a && a->done_time <= time; alarms.pop(), a = alarms.peek())
 		if (a->done_time <= time)
 			a->expired->call();
 }
@@ -72,5 +76,5 @@ void PeriodBasedMultiAlarm::start(uint delay, Callback<>* expired) {
 		.expired = expired,
 		.done_time = time + delay
 	};
-	alarms.push(newAlarm);
+	alarms.put(&newAlarm);
 }

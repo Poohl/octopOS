@@ -4,13 +4,15 @@
 #include "default.hpp"
 #include "Callback.hpp"
 #include "Timer.hpp"
-#include "libs/loop_queue.hpp"
+#include "libs/Halde.hpp"
 
 
 typedef struct {
 	Callback<>* expired;
 	uint done_time;
 } AlarmStorage;
+
+bool alarmStorageComp(const AlarmStorage* a, const AlarmStorage* b);
 
 class PeriodBasedMultiAlarm : public MultiAlarm, public PeriodicTimer, private Callback<>  {
 	private:
@@ -21,7 +23,7 @@ class PeriodBasedMultiAlarm : public MultiAlarm, public PeriodicTimer, private C
 		uint period = 0;
 		uint next_period = ~0;
 		uint time = 0; // not actually usable as "time", just runs when needed
-		LoopQueue<AlarmStorage, 32> alarms;
+		Halde<AlarmStorage, 32> alarms = Halde<AlarmStorage, 32>(alarmStorageComp);
 		bool powersave;
 		void call();
 		void updateBase();

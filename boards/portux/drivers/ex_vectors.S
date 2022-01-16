@@ -172,7 +172,7 @@ system_interrupt_hand:
 	DISCARD_CONTEXT r0, r1
 	ldm	sp!, {r0-r12, pc}^
 
-#define SYSCALLS 4
+#define SYSCALLS 6
 
 .global SWI
 /* C AAPCS (almost, consider this a function-prolouge)
@@ -197,7 +197,7 @@ addeq lr, lr, #-4
 str lr, context_pointer_stack
 ldrne lr, =SWI_context_ret
 ldreq lr, =SWI_quick_ret
-movne r0, sp
+//movne r0, sp
 bic pc, ip, #1
 
 SWI_quick_ret:
