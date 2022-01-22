@@ -15,6 +15,9 @@ SECTIONS
 
 	.bss : { *(.bss)}
 
+	. = 0x20000000;
+	.usertext : { *(.usertext*) }
+
 	/* debug stuffs, copied from ld -verbose */
 	/* DWARF debug sections.
 		Symbols in the DWARF debugging sections are relative to the beginning

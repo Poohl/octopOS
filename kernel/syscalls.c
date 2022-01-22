@@ -53,31 +53,36 @@ int impl_get_char(u32* hw_context) {
 }
 
 __attribute__ ((noinline))
-void sys_exit() {
+__attribute__ ((section (".usertext"))) void sys_exit() {
 	do_syscall(0);
 }
 
 __attribute__ ((noinline))
+__attribute__ ((section (".usertext"))) 
 void sys_new_thread(char* name,  void* args) {
 	do_syscall(1);
 }
 
 __attribute__ ((noinline))
+__attribute__ ((section (".usertext"))) 
 void sys_restore_thread(char* name,  void* context) {
 	do_syscall(2);
 }
 
 __attribute__ ((noinline))
+__attribute__ ((section (".usertext"))) 
 int sys_debug_put_char(char c) {
 	do_syscall(3);
 }
 
 __attribute__ ((noinline))
+__attribute__ ((section (".usertext"))) 
 int sys_debug_get_char() {
 	do_syscall(4);
 }
 
 __attribute__ ((noinline))
+__attribute__ ((section (".usertext"))) 
 void sys_sleep(u32 _ignore, u32 delay) {
 	do_syscall(5);
 }

@@ -4,21 +4,21 @@
 #include "libs/printf.h"
 #include "libs/delay.h"
 
-void write_active(char c) {
+__attribute__ ((section (".usertext"))) void write_active(char c) {
 	for (int i = 0; i < c; ++i) {
 		sys_debug_put_char(c);
 		worstdelayever(100);
 	}
 }
 
-void write_passive(char c) {
+__attribute__ ((section (".usertext"))) void write_passive(char c) {
 	for (int i = 0; i < c; ++i) {
 		sys_debug_put_char(c);
 		sys_sleep(0, 10000);
 	}
 }
 
-void reader() {
+__attribute__ ((section (".usertext"))) void reader()  {
 	while (1) {
 		int c = sys_debug_get_char();
 		init_thread_state_args next_thread = default_init_thread_state_args;

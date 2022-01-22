@@ -103,7 +103,7 @@ int new_thread(char* name, init_thread_state_args* args) {
 	int id = get_tcb_slot(&tcbq);
 	if (id < 0) return -1;
 	if (!args->stack)
-		args->stack = (void*) (PROCESS_STACKS - (id - 1) * 0x5000);
+		args->stack = (void*) (PROCESS_STACKS - (id - 1) * 0x100000);
 	cpu_context_init(&processes[id].context, args);
 	return internal_new_thread_finalizer(name, id);
 }
