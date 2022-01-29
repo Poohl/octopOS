@@ -21,6 +21,8 @@ void init_first_level_pagetable() {
     for (uint i = 0; i < 63; ++i) {
         l1table.desc[userland_desc + 1 + i] |= (AP_RW_RW << 10);
     }
+    l1table.desc[(EXTERNAL_SRAM + 17*MEGABYTE) >> 20] = (UNDEF_MEMORY1) | (AP_RW_RW << 10) | 0b10;
+    l1table.desc[(UNDEF_MEMORY1) >> 20] = (EXTERNAL_SRAM + 17*MEGABYTE) | (AP_RW_RW << 10) | 0b10;
 }
 
 void init_mmu() {

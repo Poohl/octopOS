@@ -13,10 +13,13 @@ char intro[] =
             "3: Execute Kernel code\r\n"
             "4: Write own code\r\n"
             "5: Stackoverflow\r\n"
-            "6: read undefined memeory\r\n";
+            "6: read undefined memeory\r\n"
+            "7: Access Sram that was mapped to undef (abort)\r\n"
+            "8: Access Undef (abort) that was mapped to sram\r\n";
 
 __attribute__ ((section (".usertext"))) int brick_it() {
-    for (int i = 0; i < 190; ++i)
+    while (1) {
+    for (int i = 0; i < 287; ++i)
         sys_debug_put_char(intro[i]);
     volatile u32 test;
     switch (sys_debug_get_char()) {
@@ -56,7 +59,14 @@ __attribute__ ((section (".usertext"))) int brick_it() {
             );
             break;
         case '6':
-            test = *((u32*) UNDEF_MEMORY1 + 200);
+            test = *((u32*) (UNDEF_MEMORY1 + MEGABYTE + 200));
             break;
+        case '7':
+            test = *((u32*) (EXTERNAL_SRAM + 17*MEGABYTE));
+            break;
+        case '8':
+            test = *((u32*) (UNDEF_MEMORY1));
+            break;
+    }
     }
 }
