@@ -14,5 +14,8 @@ Behebung: Andere Porzesse beenden (oder falls möglich, die Priorität des Playe
 3. Annahme: Der Musik-Player lädt die Audio-Datein nicht als ganzes, sondern Stückweise in den Hauptpeicher. Es gibt zu viele IO-Anfragen anderer Prozesse an die Festplatte, sodass das Nachladen der Musik nicht schnell genug geht. (Flaschenhals Festplatte) \
 Behebung: Prüfen, ob es andere Prozesse gibt, die mit der Festplatte interagieren; diese ggf. beenden und prüfen, ob das Problem weiter besteht.
 
-4. Annahme: Zur Wiedergabe der Musik muss der Playerprozess mit dem Treiber der Audio-Hardware (DA-Wandler) interagieren. Evtl. gibt es eintweder ein Problem bei der Kommunikation beider Prozesse oder zwischen Treiber und Hardware. \
+4. Annahme: Eine oder mehrere Audio-Datein sind defekt z.B. aufgrund eines Defekts des Speichermediums. \
+Behebung: Mehrere Dateien Testen und prüfen, ob das Problem weiter besteht. 
+
+5. Annahme: Zur Wiedergabe der Musik muss der Playerprozess mit dem Treiber der Audio-Hardware (DA-Wandler) interagieren. Evtl. gibt es eintweder ein Problem bei der Kommunikation beider Prozesse oder zwischen Treiber und Hardware. \
 Behebung: Ein anderes Wiedergabe-Programm testen und prüfen, ob das Problem weiter besteht. Den Treiber ggf. aktualisieren. Prüfen, ob verschiedene Treiber zu Auswahl stehen und ggf. testen.
