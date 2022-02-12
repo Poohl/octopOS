@@ -4,6 +4,7 @@
 #include "libs/printf.h"
 #include "syscalls.h"
 #include "config.h"
+#include "drivers/mmu.h"
 
 #define DEAD	0
 #define ALIVE	1
@@ -15,7 +16,10 @@ typedef struct {
 	int state;
 	char name[8];
 	u64 sleepy;
+	uint address_space;
 	cpu_context context;
+	uint children;
+	uint parent;
 } tcb;
 
 typedef struct {
@@ -65,8 +69,17 @@ void idle() {
 void exit(u32* hw_context) {
 	// Don't call tis directly frem kernel... Why would you?
 	// if (current.open_handles == 0)
-	processes[current].state = DEAD;
-	release_tcb_slot(&tcbq, current);
+	if (processes[current].children > 0) {
+		processes[current].state = ZOMBIE;
+	} else {
+		processes[current].state = DEAD;
+		if (processes[current].parent) {
+			processes[processes[current].parent].children -= 1;
+		} else {
+			release_address_space(processes[current].address_space);
+		}
+		release_tcb_slot(&tcbq, current);
+	}
 	if (--real_alive_threads == 1 && keep_interrupts_enabled < get_system_time())
 		set_timer_interval(0);
 	thread_swap_callback(hw_context);
@@ -93,6 +106,7 @@ static int internal_new_thread_finalizer(char* name, int id) {
 	processes[id].id = id;
 	processes[id].state = ALIVE;
 	processes[id].sleepy = 0;
+	processes[id].children = 0;
 	printf("created thread with id %x\n", id);
 	if (++real_alive_threads == 2)
 		set_timer_interval(SCHEDULER_TIMESLICE);
@@ -103,7 +117,22 @@ int new_thread(char* name, init_thread_state_args* args) {
 	int id = get_tcb_slot(&tcbq);
 	if (id < 0) return -1;
 	if (!args->stack)
-		args->stack = (void*) (PROCESS_STACKS - (id - 1) * 0x100000);
+		args->stack = (void*) (PROCESS_STACKS);// - (id - 1) * 0x100000);
+	if (args->new_address_space) {
+		processes[id].address_space = get_address_space();
+		if (processes[id].address_space < 0) {
+			release_tcb_slot(&tcbq, id);
+			return -1;
+		}
+		printf("new ASP\r\n");
+		set_ap(processes[id].address_space, PROCESS_STACKS, MEGABYTE, PROCESS_STACKS + (id - 1) * MEGABYTE, AP_RW_RW);
+		processes[id].parent = 0;
+	} else {
+		processes[id].address_space = processes[current].address_space;
+		args->stack = (void*) (PROCESS_STACKS + id * 64 * KILOBYTE);
+		processes[current].children += 1;
+		processes[id].parent = current;
+	}
 	cpu_context_init(&processes[id].context, args);
 	return internal_new_thread_finalizer(name, id);
 }
@@ -129,9 +158,12 @@ void thread_swap_callback(u32* context) {
 			break;
 
 		// get your chainsaw and your shotgun cause we're going on a zombie-hunt
-		if (processes[next].state == ZOMBIE) {
+		if (processes[next].state == ZOMBIE && processes[next].children == 0) {
 			release_tcb_slot(&tcbq, processes[next].id);
+			release_address_space(processes[next].address_space);
 			processes[next].state = DEAD;
+			if (processes[next].parent)
+				processes[processes[next].parent].children -= 1;
 			printf("BOOM! -> %x\n", processes[next].id);
 		}
 	}
@@ -139,6 +171,7 @@ void thread_swap_callback(u32* context) {
 		next = 0;
 	}
 	printf("Swap from slot %x to %x (%x total)\r\n", current, next, real_alive_threads);
+	swap_address_space(processes[current].address_space, processes[next].address_space);
 	swap(&processes[current].context, context, &processes[next].context);
 	current = next;
 	//print_q(&tcbq);

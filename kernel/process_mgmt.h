@@ -18,6 +18,7 @@ struct _init_thread_state_args {
 	u32 args[4];
 	uint stack_size;
 	bool is_sys;
+	bool new_address_space;
 };
 
 void init_process_mgmt();
@@ -42,7 +43,8 @@ void unblock_now(uint id, u32* hw_context, u32 return_value);
 	.stack = NULL, \
 	.stack_size = 1 << 11, \
 	.args = {0}, \
-	.is_sys=false \
+	.is_sys=false, \
+	.new_address_space=true \
 }
 
 void sleep(u32* hw_context, u32 delay);

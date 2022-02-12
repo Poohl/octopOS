@@ -11,6 +11,16 @@ typedef struct {
     u32 desc[4096];
 } first_level_pagetable __attribute__ ((aligned (16384)));
 
-void init_first_level_pagetable();
+int get_address_space();
+
+void release_address_space(uint id);
+
+void init_first_level_pagetable(uint address_space_id);
+
+int set_ap(uint address_space_id, void* address, uint size, void* dest, uint ap);
+
+void swap_address_space(uint src, uint dest);
+
+void init_mmu_mgmt();
 
 void init_mmu();

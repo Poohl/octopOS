@@ -8,6 +8,7 @@
 #define INTERNAL_SRAM    0x200000
 
 #define MEGABYTE         0x100000
+#define KILOBYTE             1024
 
 #define EXTERNAL_SRAM  0x20000000
 #define PROCESS_STACKS 0x20200000

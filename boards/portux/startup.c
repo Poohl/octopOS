@@ -14,7 +14,7 @@
 #include "apps/u5_demo.h"
 #include "kernel/config.h"
 #include "drivers/mmu.h"
-#include "apps/u6_demo.h"
+#include "apps/u7_demo.h"
 
 // needed to prevent gcc from optimizing c_entry out.
 #pragma GCC push_options
@@ -36,6 +36,7 @@ void c_entry(void) {
 
 	asm("mrs %0, cpsr" :  "=r" (buff) : : );
 	printf_cpsr(buff);
+	init_mmu_mgmt();
 	init_process_mgmt();
 
 
@@ -70,12 +71,12 @@ void c_entry(void) {
 	//dbgu_write_async(17, "async writing!\r\n");
 	//dbgu_async_write_flush();
 
-	init_first_level_pagetable();
+	init_first_level_pagetable(7);
 	init_mmu();
 	
-	init_thread_state_args reader_t = default_init_thread_state_args;
-	reader_t.start = &brick_it;
-	new_thread("reader", &reader_t);
+	init_thread_state_args demo_t = default_init_thread_state_args;
+	demo_t.start = &u7_demo;
+	new_thread("demo", &demo_t);
 
 	
 	/* interrupt tst loop*/
