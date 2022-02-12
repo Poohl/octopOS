@@ -67,8 +67,11 @@ void idle() {
 }
 
 void exit(u32* hw_context) {
-	// Don't call tis directly frem kernel... Why would you?
-	// if (current.open_handles == 0)
+	// Don't call this directly from kernel... Why would you?
+
+	// we can only release a process if it has no children,
+	// as it might be owner of the address space.
+	// we can only release the address_space if we're actually its owner.
 	if (processes[current].children > 0) {
 		processes[current].state = ZOMBIE;
 	} else {
@@ -137,7 +140,9 @@ int new_thread(char* name, init_thread_state_args* args) {
 	return internal_new_thread_finalizer(name, id);
 }
 
+// this one is not yet updated for the children + address-space thing.
 int new_thread_raw(char* name, cpu_context* init_state, bool may_be_sys) {
+	return -1;
 	if (!cpu_context_validate(init_state, may_be_sys)) return -2;
 	int id = get_tcb_slot(&tcbq);
 	if (id < 0) return -1;
@@ -158,12 +163,14 @@ void thread_swap_callback(u32* context) {
 			break;
 
 		// get your chainsaw and your shotgun cause we're going on a zombie-hunt
+		// we haven't upgraded to the recursive shotgun yet.
 		if (processes[next].state == ZOMBIE && processes[next].children == 0) {
 			release_tcb_slot(&tcbq, processes[next].id);
-			release_address_space(processes[next].address_space);
 			processes[next].state = DEAD;
 			if (processes[next].parent)
 				processes[processes[next].parent].children -= 1;
+			else
+				release_address_space(processes[next].address_space);
 			printf("BOOM! -> %x\n", processes[next].id);
 		}
 	}

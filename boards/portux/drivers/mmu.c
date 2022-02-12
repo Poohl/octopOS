@@ -36,6 +36,7 @@ void release_addsp_slot(addsp_queue* q, int slt) {
 	q->available++;
 }
 
+// this is needed by the process mgmt, but we can't turn on the mmu before process mgmt
 void init_mmu_mgmt() {
     init_addsp_queue(&addsp_q);
 }
@@ -63,17 +64,16 @@ void init_first_level_pagetable(uint address_space_id) {
         address_spaces[address_space_id].desc[i] = (AP_NONE_NONE << 10) | 0b10;
     for (uint i = (UNDEF_MEMORY2 >> 20); i < 249; ++i)
         address_spaces[address_space_id].desc[i] = (AP_NONE_NONE << 10) | 0b10;
-    // make userland acessible by users
+    // make usercode acessible by users
     uint userland_desc = EXTERNAL_SRAM >> 20;
     address_spaces[address_space_id].desc[userland_desc] = (userland_desc << 20) | (AP_RW_R << 10) | 0b10;
-    /*for (uint i = 0; i < 63; ++i) {
-        address_spaces[address_space_id].desc[userland_desc + 1 + i] |= (AP_RW_RW << 10);
-    }*/
-    // modify the mapping to switch 1MB of sram with 1MB of undef memory
-    //address_spaces[address_space_id].desc[(EXTERNAL_SRAM + 17*MEGABYTE) >> 20] = (UNDEF_MEMORY1) | (AP_RW_RW << 10) | 0b10;
-    //address_spaces[address_space_id].desc[(UNDEF_MEMORY1) >> 20] = (EXTERNAL_SRAM + 17*MEGABYTE) | (AP_RW_RW << 10) | 0b10;
+
 }
 
+/**
+ * Grants access to a section of memory of size size located at dest in physical address space
+ * and mapped at address in logical address space address_space_id.
+ */
 int set_ap(uint address_space_id, void* address, uint size, void* dest, uint ap) {
     if (size != MEGABYTE)
         return -1;

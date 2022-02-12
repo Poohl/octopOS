@@ -78,7 +78,6 @@ void c_entry(void) {
 	demo_t.start = &u7_demo;
 	new_thread("demo", &demo_t);
 
-	
 	/* interrupt tst loop*/
 	while (42) {
 		asm volatile("nop":::);
