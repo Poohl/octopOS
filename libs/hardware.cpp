@@ -1,8 +1,28 @@
 
+extern "C" {
 #include "default.h"
 
 #include "hardware.h"
 #include "libs/printf.h"
+}
+
+#include "drivers/Streams.hpp"
+
+extern AsyncOutStream* debug_out_stream;
+extern AsyncInStream* debug_in_stream;
+
+__attribute__((weak)) int debug_put_char(char c) {
+	debug_out_stream->write(&c, 1, NULL);
+	return 0;
+}
+__attribute__((weak)) int debug_get_char() {
+	char out;
+	while (!debug_in_stream->available());
+	debug_in_stream->read_available(&out, 1);
+	return out;
+}
+
+extern "C" {
 
 __attribute__((weak)) sequence_io_status debug_write(uint len, const byte* data) {
 	sequence_io_status out = {};
@@ -53,14 +73,17 @@ __attribute__((weak)) void timer_handler() {
 	debug_write(3, "!\r\n");
 }
 
-__attribute__((weak)) void *memset(void *s, int c, size_t n) {
+__attribute__((weak))
+void *memset(void *s, int c, size_t n) {
 	for (size_t i = 0; i < n; ++i)
 		((byte*) s)[i] = c;
 	return s;
 }
 
-__attribute__((weak)) void *memcpy(void *dest, const void *src, size_t n) {
+__attribute__((weak))
+void *memcpy(void *dest, const void *src, size_t n) {
 	for (size_t i = 0; i < n; ++i)
 		((byte*) dest)[i] = ((byte*) src)[i];
 	return dest;
+}
 }

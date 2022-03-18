@@ -76,6 +76,14 @@ class UnblockSleepThreadCallback : public Callback<> {
 static MultiAlarm* sleepAlarm;
 static UnblockSleepThreadCallback unblock_sleep_storage[16];
 
+void syscall_handler(int syscall, void* source) {
+	if (syscall >= SYSCALLS)
+		exception_handler(EXCEPTION_UNKNOWN_SYSCALL, NULL, source);
+	if ((u32) syscall_table[syscall] & 1)
+		set_return_values((cpu_context*) source, (u32*) &source, 1);
+	call_for_hw_context((void_void_func_ptr)((u32) syscall_table[syscall] | 1), (hw_cpu_context*) source);
+}
+
 void impl_sleep(u32 delay) {
 	uint tid = block_current(get_stacked_context());
 	unblock_sleep_storage[tid] = UnblockSleepThreadCallback(tid);

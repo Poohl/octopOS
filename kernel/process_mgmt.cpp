@@ -63,7 +63,7 @@ void helper() {
 void init_process_mgmt(PeriodicTimer* _timer) {
 	timer = _timer;
 	timer->setCallback(&schedulerCaller);
-	helper();
+	//helper();
 	current = 15;
 	memset(processes, 0, sizeof(processes));	// clear tcb-array from ghosts
 	for (int i = 0; i < NUM_THREADS; ++i) {
@@ -77,7 +77,7 @@ void init_process_mgmt(PeriodicTimer* _timer) {
 	idle_args.is_sys = true;
 	idle_args.stack_size = sizeof(processes[0].context.registers);
 	new_thread("idle", &idle_args);
-	//real_alive_threads = 0;
+	real_alive_threads = 1;
 }
 
 extern "C"
@@ -99,8 +99,10 @@ int new_thread(const char* name, init_thread_state_args* args) {
 	uint* id_p = tcb_free_q.pop();
 	if (!id_p) return -1;
 	int id = *id_p;
-	if (!args->stack)
+	if (!args->stack) {
 		args->stack = (void*) (PROCESS_STACKS - (id - 1) * 0x5000);
+		args->stack_size = 0x5000;
+	}
 	cpu_context_init(&processes[id].context, args);
 	return internal_new_thread_finalizer(name, id);
 }

@@ -1,0 +1,2 @@
+
+# Why different memory management for kernel and userland.

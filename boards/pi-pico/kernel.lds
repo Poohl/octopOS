@@ -1,13 +1,20 @@
 ENTRY(_start)
+/*OUTPUT_ARCH(armv6-m)*/
 SECTIONS
 {
 	. = 0x10000000;
 	.boot2 : { *(.boot2) }
 	. = 0x10000100;
 	.vectors : { *(.vectors) }
-	.text : { *(.text) }
+	.text : { *(.text* text) }
 	/* and once more with feeling */
 	.rodata : { *(.rodata*) }
+	.ARM : { *(.ARM.extab) }
+	
+
+	PROVIDE(__INIT_ARRAY_S__ = .);
+	.init_array : {*(.init_array)}
+	PROVIDE(__INIT_ARRAY_E__ = .);
 
 	/* ahh shit, here we go again */
 	__exidx_start = .;
@@ -16,8 +23,9 @@ SECTIONS
 	
 	. = 0x20000000;
 	COMMON : { *(COMMON) }
-	/* ahh, yes. The empty & unused section ld is in love with */
 	.data : { *(.data) }
+	/* ahh, yes. The empty & unused section ld is in love with */
+	
 
 	.bss : { *(.bss)}
 
@@ -57,5 +65,5 @@ SECTIONS
 	.note.gnu.arm.ident 0 : { KEEP (*(.note.gnu.arm.ident)) }
 
 	/* FUCK OFF LD, We don't want your bullshit */
-	/*/DISCARD/ : {*(*)}*/
+	/DISCARD/ : {*(*)}
 }

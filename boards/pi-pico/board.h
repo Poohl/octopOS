@@ -17,7 +17,12 @@
 
 #define INIT_MAIN_STACK         0x20001000
 #define INIT_PROCESS_STACK      0x20002000
+#define PROCESS_STACKS          0x20010000
+
+#define UART0_BASE              0x40034000
+
 #define SYSTICK                 0xE000E010
+#define SYSTICK_BASE            0xE000E010
 
 #define NVIC                    0xE000E100
 #define SYS_CTL_VTOR            0xE000ED08
@@ -54,6 +59,8 @@
 #ifndef __ASSEMBLER__
 
 void _start(void);
+
+void uart0_hand(void);
 
 typedef u16 default_instruction;
 

@@ -47,7 +47,8 @@ QEMU_FLAGS = -M portux920t -m 64M -nographic
 QEMU_DEBUG_FLAGS = -s -S
 
 # folders that include general code used regardless of platform
-src_dirs = apps drivers libs fluff kernel
+#src_dirs = apps drivers libs fluff kernel
+src_dirs = drivers libs fluff kernel
 
 # fix path
 #headers := $(addprefix boards/$(platform),$(headers))
@@ -141,7 +142,9 @@ $(build_dir)/kernel.elf: $(obj) $(lds)
 run: $(prod)
 	$(QEMU) $(QEMU_FLAGS) -kernel $(prod)
 
-debugger:
+dumps: $(dumps)
+
+debugger: $(prod) $(dumps)
 	gdb-multiarch $(if $(debug_load),,-s) $(build_dir)/kernel.elf -ex "target remote $(debug_target)" -ex "layout split" $(if $(debug_load), --ex "load")
 
 wordcount:

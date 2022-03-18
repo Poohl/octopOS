@@ -1,0 +1,8 @@
+# armv6
+225 Exception entry
+
+# armv4
+723 B4.7 Adress translation mechanism
+
+Atmel CPU
+41 MMU registers

@@ -4,6 +4,8 @@
 
 #define INTERNAL_SRAM 0x200000
 
+#define PROCESS_STAKC
+
 #define DBGU 0xFFFFF200
 #define DBGU_END 0xFFFFF400
 

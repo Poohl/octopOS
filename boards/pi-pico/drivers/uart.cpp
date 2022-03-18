@@ -1,16 +1,34 @@
-#include "default.h"
-#include "libs/hardware.h"
-#include "libs/loop_queue.h"
-#include "board.h"
-#include "libs/printf.h"
 
-void PUT32 ( unsigned int dest, unsigned int val) {
+extern "C" {
+#include "board.h"
+}
+
+#include "uart.hpp"
+
+// please pay close attention to how this is swapped from the interrupts
+// also why exaclty do we need this register, can't we just use isr_all ?
+#define STATUS_RX_EMPTY (1 << 4)
+#define STATUS_TX_FULL (1 << 5)
+#define STATUS_RX_FULL (1 << 6)
+#define STATUS_TX_EMPTY (1 << 7)
+
+// the documentation is the most unreadable shit. And even better, the official defs are also a mess.
+
+#define ISR_OVERRUN_ERROR (1 << 10)
+#define ISR_BREAK_ERROR (1 << 9)
+#define ISR_PARITY_ERROR (1 << 8)
+#define ISR_FRAME_ERROR (1 << 7)
+#define ISR_RX_DROPPED (1 << 6)
+#define ISR_TX_EMPTY (1 << 5)
+#define ISR_RX_FULL (1 << 4)
+#define ISR_MODEM (0xF)
+
+static void PUT32 ( unsigned int dest, unsigned int val) {
 	*((volatile u32*) (dest)) = ((u32) (val));
 }
-unsigned int GET32 ( unsigned int dest) {
+static unsigned int GET32 ( unsigned int dest) {
 	return *((volatile u32*) (dest));
 }
-
 #define RESETS_BASE                 0x4000C000
 
 #define RESETS_RESET_RW        (RESETS_BASE+0x0+0x0000)
@@ -103,35 +121,6 @@ unsigned int GET32 ( unsigned int dest) {
 #define XOSC_STARTUP_SET            (XOSC_BASE+0x0C+0x2000)
 #define XOSC_STARTUP_CLR            (XOSC_BASE+0x0C+0x3000)
 
-#define UART0_BASE                  0x40034000
-
-typedef struct {
-	u32 data;
-	u32 error;
-	u32 _reserved1[4];
-	u32 status;
-	u32 _reserved2;
-	u32 low_power_counter;
-	u32 int_baudrate_divisor;
-	u32 frac_baudrate_divisor;
-	u32 mode;
-	u32 control;
-	u32 fifo_isr_level;
-	u32 isr_mask;
-	u32 isr_all_status;
-	u32 isr_masked_status;
-	u32 isr_clear;
-	u32 dma_control;
-	u32 _reserved3[(0xfe0 - 0x48) / 4 - 1];
-	u32 preiphid[4];
-	u32 cellid[4];
-} uart;
-
-static volatile uart* uart0 = (uart*) UART0_BASE;
-
-static byte_loop_queue send_buff;
-static byte_loop_queue recv_buff;
-
 #define UART0_BASE_UARTDR_RW        (UART0_BASE+0x000+0x0000)
 #define UART0_BASE_UARTFR_RW        (UART0_BASE+0x018+0x0000)
 #define UART0_BASE_UARTIBRD_RW      (UART0_BASE+0x024+0x0000)
@@ -143,82 +132,8 @@ static byte_loop_queue recv_buff;
 #define STK_RVR 0xE000E014
 #define STK_CVR 0xE000E018
 
-// please pay close attention to how this is swapped from the interrupts
-// also why exaclty do we need this register, can't we just use isr_all ?
-#define STATUS_RX_EMPTY (1 << 4)
-#define STATUS_TX_FULL (1 << 5)
 
-// the documentation is the most unreadable shit. And even better, the official defs are also a mess.
-
-#define ISR_OVERRUN_ERROR (1 << 10)
-#define ISR_BREAK_ERROR (1 << 9)
-#define ISR_PARITY_ERROR (1 << 8)
-#define ISR_FRAME_ERROR (1 << 7)
-#define ISR_RX_DROPPED (1 << 6)
-#define ISR_TX_EMPTY (1 << 5)
-#define ISR_RX_FULL (1 << 4)
-#define ISR_MODEM (0xF)
-
-int uart_recv () {
-	while(uart0->status & STATUS_RX_EMPTY);
-	return uart0->data;
-}
-
-int uart_send ( unsigned int x ) {
-	while(uart0->status & STATUS_TX_FULL);
-	uart0->data = x;
-	return 0;
-}
-
-void uart0_hand() {
-	u32 status = uart0->status;
-	//printf(">u0 %x %x\r\n", uart0->isr_all_status, uart0->isr_masked_status);
-	
-	if (!(status & STATUS_TX_FULL)) {
-		uart0->data = blq_pop(&send_buff);
-		if (send_buff.c_size <= 0)
-			*hw_clear_alias(&uart0->isr_mask) = ISR_TX_EMPTY;
-	}
-	if (!(status & STATUS_RX_EMPTY)) {
-		blq_push(&recv_buff, (byte) uart0->data);
-	}
-	//printf("u0> %x %x\r\n", uart0->isr_all_status, uart0->isr_masked_status);
-}
-
-sequence_io_status uart_write(uint len, const byte* data) {
-	sequence_io_status out = {};
-	for (out.io = 0; out.io < len &&
-			!(out.err = uart_send(data[out.io]));
-		++out.io);
-	if (out.err)
-		out.io -= 1;
-	return out;
-}
-
-sequence_io_status uart_read(uint len, byte* buff) {
-	sequence_io_status out = {};
-	for (out.io = 0; out.io < len &&
-			0 <= (out.err = uart_recv());
-		++out.io) {
-			buff[out.io] = (byte) out.err;
-		}
-	if (out.err < 0)
-		out.io -= 1;
-	else
-		out.err = 0;
-	return out;
-}
-
-//static void uart_flush ( void )
-//{
-	//while(1)
-	//{
-		//if((GET32(UART0_BASE_UARTFR_RW)&(1<<7))!=0) break;
-	//}
-//}
-
-static void clock_init ( void )
-{
+static void clock_init (void) {
 	PUT32(CLK_SYS_RESUS_CTRL_RW,0);
 	//PUT32(CLK_REF_CTRL_RW,0);
 	//PUT32(CLK_SYS_CTRL_RW,0);
@@ -231,15 +146,11 @@ static void clock_init ( void )
 	}
 	PUT32(CLK_REF_CTRL_RW,2); //XOSC
 	PUT32(CLK_SYS_CTRL_RW,0); //reset/clk_ref
-}
-
-int uart_init ( void )
-{
-
-	clock_init();
 
 	PUT32(CLK_PERI_CTRL_RW,(1<<11)|(4<<5));
+}
 
+static void reset_init( void ) {
 	PUT32(RESETS_RESET_CLR,(1<<5)); //IO_BANK0
 	while(1)
 	{
@@ -250,7 +161,9 @@ int uart_init ( void )
 	{
 		if((GET32(RESETS_RESET_DONE_RW)&(1<<22))!=0) break;
 	}
+}
 
+static void uart_init() {
 	//GPIO 0 UART0 TX function 2
 	//GPIO 1 UART0 RX function 2
 
@@ -262,53 +175,97 @@ int uart_init ( void )
 	//0111 0000
 	PUT32(UART0_BASE_UARTLCR_H_RW,0x70);
 	PUT32(UART0_BASE_UARTCR_RW,(1<<9)|(1<<8)|(1<<0));
+}
 
+static void GPIO_init(void) {
 	PUT32(IO_BANK0_GPIO0_CTRL_RW,2);  //UART
 	PUT32(IO_BANK0_GPIO1_CTRL_RW,2);  //UART
-
-//	*hw_clear_alias(&uart0->isr_mask) = ISR_RX;
-	//uart0->isr_clear = 0xFFFFFFFF;
-	blq_init(&recv_buff);
-	blq_init(&send_buff);
-	
-	*hw_clear_alias(&uart0->isr_mask) = 0xFFFFFFFF;
-	*hw_set_alias(&uart0->isr_mask) = ISR_RX_FULL | ISR_RX_DROPPED | ISR_OVERRUN_ERROR | ISR_PARITY_ERROR | ISR_BREAK_ERROR | ISR_FRAME_ERROR;
-	//uart0->isr_mask = 
-	return(0);
 }
 
-int debug_put_char(char c) {
-	return uart_send(c);
-}
-int debug_get_char() {
-	return uart_recv();
-}
-
-void uart_write_async(uint len, const byte* data) {
-	blq_push_multi(&send_buff, data, len);
-	/* 
-	 * Yes there'a a race condition here:
-	 * If the handler checks the queue, finds it empty
-	 * we push & enable interrupts again
-	 * then the handler disables them again.
-	 * but currently the handler cannot be interrupted.
-	 */
-	*hw_set_alias(&uart0->isr_mask) = ISR_TX_EMPTY;
+void Uart::init(mmio_uart* _base) {
+	clock_init();
+	reset_init();
+	GPIO_init();
+	base = _base;
+	base->int_baudrate_divisor = 6;
+	base->frac_baudrate_divisor = 33;
+	base->mode = 0x70;
+	base->control = (1<<9)|(1<<8)|(1<<0);
+	*hw_clear_alias(&_base->isr_mask) = 0xFFFFFFFF;
+	//*hw_set_alias(&_base->isr_mask) = ISR_RX_FULL | ISR_RX_DROPPED | ISR_OVERRUN_ERROR | ISR_PARITY_ERROR | ISR_BREAK_ERROR | ISR_FRAME_ERROR;
+	//*hw_set_alias(&_base->isr_mask) = ISR_OVERRUN_ERROR | ISR_PARITY_ERROR | ISR_BREAK_ERROR | ISR_FRAME_ERROR;
+	//while (1)
+	//	write_byte('c');
 }
 
-uint uart_read_async(uint len, byte* dest) {
-	return blq_pop_multi(&recv_buff, dest, len);
+bool Uart::baseCallback() {
+	u32 status = this->base->status;
+	if (status & STATUS_RX_FULL) {
+		if (readQueue.peek()) {
+			readQueue.peek()->dest[readProgress++] = (byte) base->data;
+			if (readQueue.peek()->len == readProgress) {
+				readQueue.pop()->done->call(sequence_io_status {readProgress, 0});
+				readProgress = 0;
+			}
+		} else
+			*hw_clear_alias(&base->isr_mask) = ISR_RX_FULL;
+	}
+	if (status & STATUS_TX_EMPTY) {
+		if (writeQueue.peek()) {
+			base->data = writeQueue.peek()->data[writeProgress++];
+			if (writeProgress == writeQueue.peek()->len) {
+				if (writeQueue.peek()->done)
+					writeQueue.pop()->done->call(sequence_io_status {writeProgress, 0});
+				writeProgress = 0;
+			}
+		} else {
+			*hw_clear_alias(&base->isr_mask) = ISR_TX_EMPTY;
+		}
+	}
+	//base->isr_clear = ~0;
+	return status;
 }
 
-sequence_io_status uart_async_write_flush() {
-	while (send_buff.c_size > 0)
-		asm volatile ("" : : : );
-	sequence_io_status out = {0,0};
-	return out;
+void Uart::read(byte* dest, uint len, Callback<sequence_io_status>* done) {
+	this->readQueue.push(AsyncReadRequest {dest, len, done});
+	*hw_set_alias(&base->isr_mask) = ISR_RX_FULL;
+
 }
 
-uint uart_async_read_flush() {
-	uint out = recv_buff.c_size;
-	blq_init(&recv_buff);
-	return out;
+void Uart::write(const byte* data, uint len, Callback<sequence_io_status>* done) {
+	this->writeQueue.push(AsyncWriteRequest {data, len, done});
+	*hw_set_alias(&base->isr_mask) = ISR_TX_EMPTY;
+}
+
+int Uart::pending() {
+	AsyncWriteRequest* c_request = this->writeQueue.peek();
+	return  c_request ? c_request->len - this->writeProgress : -1;
+}
+
+sequence_io_status Uart::abort() {
+	*hw_clear_alias(&base->isr_mask) = ISR_TX_EMPTY;
+	if (this->writeQueue.peek()) {
+		sequence_io_status out = {
+			this->pending(),
+			ERR_ABORT
+		};
+		this->writeProgress = 0;
+		this->writeQueue.pop();
+		if (this->writeQueue.peek())
+			*hw_set_alias(&base->isr_mask) = ISR_TX_EMPTY;
+		return out;
+	} else
+		*hw_set_alias(&base->isr_mask) = ISR_TX_EMPTY;
+	return {0, 1};
+}
+
+int Uart::write_byte(byte data) {
+	while (base->status & STATUS_TX_FULL);
+	this->base->data = data;
+	return 0; // there are no errors in ba-sing-sei
+}
+
+int Uart::read_byte() {
+	while (this->base->status & STATUS_RX_EMPTY);
+	return this->base->data;
 }
