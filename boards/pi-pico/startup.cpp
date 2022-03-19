@@ -83,8 +83,6 @@ void _start(void) {
 	while (uart0.pending() > 0);
 	printf("formatted %x\r\n", 4);
 	while (uart0.pending() > 0);
-
-	while (1);
 	init_process_mgmt(&sysTimer);
 	init_syscalls(NULL);
 	init_thread_state_args args = default_init_thread_state_args;
@@ -94,6 +92,8 @@ void _start(void) {
 	args.args[1] = (u32) "aaaa\r\n";
 	new_thread("tester1", &args);
 	args.args[1] = (u32) "bbbb\r\n";
+	args.stack = NULL;
+	args.stack_size = NULL;
 	new_thread("tester2", &args);
 	sys_exit();
 	printf("test");
