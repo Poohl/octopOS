@@ -5,7 +5,7 @@
 isr_return_exit:
 	pop {pc}
 .global switch_on_isr_return
-switch_on_isr_return:
+switch_on_isr_return: // (), return magic on stack
 	ldr r3, =switch_context
 	ldr r2, [r3, #0]
 	cmp r2, #0
@@ -21,7 +21,7 @@ switch_on_isr_return:
 // these high registers are a joke
 // there are literally 2 1/2 instructions able to access them
 // and two of those are mov...
-swap_high_registers: //(cpu_context.registers from, const cpu_context.registers to, u32 return_magic), return address on stack
+swap_high_registers: //(cpu_context.registers from, const cpu_context.registers to, u32 return_magic)
 	stmia r0!, {r4-r7}
 	mov r4, r8
 	mov r5, r9
@@ -37,5 +37,3 @@ swap_high_registers: //(cpu_context.registers from, const cpu_context.registers 
 	mov r11, r7
 	ldmia r1!, {r4-r7}
 	bx r2
-
-	

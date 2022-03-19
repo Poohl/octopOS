@@ -214,8 +214,9 @@ bool Uart::baseCallback() {
 		if (writeQueue.peek()) {
 			base->data = writeQueue.peek()->data[writeProgress++];
 			if (writeProgress == writeQueue.peek()->len) {
-				if (writeQueue.peek()->done)
-					writeQueue.pop()->done->call(sequence_io_status {writeProgress, 0});
+				Callback<sequence_io_status>* d = writeQueue.pop()->done;
+				if (d)
+					d->call(sequence_io_status {writeProgress, 0});
 				writeProgress = 0;
 			}
 		} else {

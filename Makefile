@@ -145,7 +145,7 @@ run: $(prod)
 dumps: $(dumps)
 
 debugger: $(prod) $(dumps)
-	gdb-multiarch $(if $(debug_load),,-s) $(build_dir)/kernel.elf -ex "target remote $(debug_target)" -ex "layout split" $(if $(debug_load), --ex "load")
+	gdb-multiarch $(if $(debug_load),,-s) $(build_dir)/kernel.elf -ex "target remote $(debug_target)" -ex "layout split" $(if $(debug_load), --ex "monitor reset init" --ex "monitor reset init" --ex "load")
 
 wordcount:
 	cat $(S_src) $(c_src) $(headers) | wc

@@ -88,7 +88,11 @@ static void _unexpected_isr_hand() {
 	exception_handler(EXCEPTION_UNEXPECTED_ISR, NULL, num);
 }
 
-//LOAD_STACK_ISR_WRAPPER(systick_hand)
+void _systick_hand() {
+	systick_hand();
+}
+
+ISR_WRAPPER(_systick_hand)
 
 isr vectors[] __attribute__((section(".vectors"))) = {
 	[0 ... 16] = &dontCare,
@@ -100,7 +104,7 @@ isr vectors[] __attribute__((section(".vectors"))) = {
 	[11] = &__svcall_hand, // hard syscall
 	// [12,13] = reserved
 	[14] = &__svcall_hand, // soft syscall
-	[15] = &systick_hand,
+	[15] = &__systick_hand,
 	[16 ... 16+32] = &_unexpected_isr_hand,
 	[16 + 20] = &uart0_hand
 };

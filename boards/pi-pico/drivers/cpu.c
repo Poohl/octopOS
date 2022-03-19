@@ -27,7 +27,6 @@ struct {
 bool pending;
 u32* from;
 const u32* to;
-u32 return_const;
 } switch_context;
 
 void swap(cpu_context* curr, u32* _ignore, cpu_context* next) {

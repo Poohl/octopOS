@@ -55,11 +55,6 @@ void exit(u32* hw_context) {
 	thread_swap_callback(hw_context);
 }
 
-void helper() {
-	PeriodicTimer* t = timer;
-	t->setCallback(NULL);
-}
-
 void init_process_mgmt(PeriodicTimer* _timer) {
 	timer = _timer;
 	timer->setCallback(&schedulerCaller);
@@ -86,7 +81,7 @@ int internal_new_thread_finalizer(const char* name, int id) {
 	memcpy(&processes[id].name, name, 7);
 	processes[id].id = id;
 	processes[id].state = ALIVE;
-	printf("created thread with id %x\n", id);
+	//printf("created thread with id %x\n", id);
 	if (++real_alive_threads == 2) {
 		timer->setPeriod(10000);
 	}
@@ -95,7 +90,6 @@ int internal_new_thread_finalizer(const char* name, int id) {
 
 extern "C"
 int new_thread(const char* name, init_thread_state_args* args) {
-	timer->setCallback(NULL);
 	uint* id_p = tcb_free_q.pop();
 	if (!id_p) return -1;
 	int id = *id_p;

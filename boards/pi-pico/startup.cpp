@@ -57,9 +57,9 @@ void notmain(void) {
 	return;
 }
 
-extern "C" void testfunc(BlockingOutStream* out) {
+extern "C" void testfunc(BlockingOutStream* out, const char* str) {
 	while (1)
-		out->write("func\r\n", 7);
+		out->write(str, 7);
 }
 
 /* MAIN */
@@ -78,14 +78,23 @@ void _start(void) {
 	sysTimer.setPeriod(100000);
 	init_stacks();
 	init_vectors();
-	uart0.BlockingOutStream::write("hello\r\n", 8);
+	uart0.BlockingOutStream::write("blocking\r\n", 11);
+	uart0.write("nonblocking\r\n", 14, NULL);
+	while (uart0.pending() > 0);
+	printf("formatted %x\r\n", 4);
+	while (uart0.pending() > 0);
+
+	while (1);
 	init_process_mgmt(&sysTimer);
 	init_syscalls(NULL);
 	init_thread_state_args args = default_init_thread_state_args;
 	args.start = (void_void_func_ptr) &testfunc;
 	args.is_sys = true;
 	args.args[0] = (u32) ((BlockingOutStream*) &uart0);
-	new_thread("tester", &args);
+	args.args[1] = (u32) "aaaa\r\n";
+	new_thread("tester1", &args);
+	args.args[1] = (u32) "bbbb\r\n";
+	new_thread("tester2", &args);
 	sys_exit();
 	printf("test");
 
